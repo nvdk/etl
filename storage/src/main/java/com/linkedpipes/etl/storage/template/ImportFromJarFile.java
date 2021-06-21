@@ -5,8 +5,8 @@ import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.jar.JarComponent;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
-import com.linkedpipes.etl.storage.template.repository.WritableTemplateRepository;
-import org.apache.commons.io.FileUtils;
+import com.linkedpipes.etl.storage.template.store.StoreException;
+import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,14 +43,14 @@ final class ImportFromJarFile {
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    private final WritableTemplateRepository repository;
+    private final TemplateStore store;
 
     private JarFile jarFile;
 
     private Map<String, JarEntry> entries;
 
-    public ImportFromJarFile(WritableTemplateRepository repository) {
-        this.repository = repository;
+    public ImportFromJarFile(TemplateStore store) {
+        this.store = store;
     }
 
     public void importJarComponent(JarComponent component) {
@@ -61,9 +62,7 @@ final class ImportFromJarFile {
             return;
         }
         String id = "jar-" + component.getFile().getName();
-        File directory = getDirectory(id);
         try {
-            directory.mkdirs();
             copyStaticFiles(id);
             Collection<Statement> definition = loadDefinition();
             Resource resource = getTemplateResource(definition);
@@ -77,24 +76,28 @@ final class ImportFromJarFile {
             Resource configGraph = this.valueFactory.createIRI(
                     resource.stringValue() + "/configGraph");
             config = RdfUtils.forceContext(config, configGraph);
-            repository.setConfig(templateRef(id), config);
+            store.setConfig(templateRef(id), config);
             // Handle configuration description.
             Collection<Statement> configDesc = loadConfigDescription();
             Resource configDescGraph = this.valueFactory.createIRI(
                     resource.stringValue() + "/configDescGraph");
             configDesc = RdfUtils.forceContext(configDesc, configDescGraph);
-            repository.setConfigDescription(templateRef(id), configDesc);
+            store.setConfigDescription(templateRef(id), configDesc);
             // Finalize definition and interface.
             definition = RdfUtils.forceContext(definition, resource);
-            repository.setInterface(templateRef(id), definition);
+            store.setInterface(templateRef(id), definition);
             definition.add(valueFactory.createStatement(resource,
                     valueFactory.createIRI(LP_PIPELINE.HAS_CONFIGURATION_GRAPH),
                     configGraph, resource
             ));
-            repository.setDefinition(templateRef(id), definition);
+            store.setDefinition(templateRef(id), definition);
         } catch (Exception ex) {
             LOG.error("Can't import jar template: {}", component.getIri(), ex);
-            FileUtils.deleteQuietly(directory);
+            try {
+                store.remove(RepositoryReference.createJar(id));
+            } catch (StoreException storeException) {
+                LOG.warn("Can't delete after failure.", storeException);
+            }
         }
     }
 
@@ -113,10 +116,6 @@ final class ImportFromJarFile {
                 this.entries.put(key, entry);
             }
         }
-    }
-
-    private File getDirectory(String id) {
-        return repository.getDirectory(templateRef(id));
     }
 
     private Collection<Statement> loadDefinition() throws BaseException {
@@ -143,16 +142,13 @@ final class ImportFromJarFile {
         return readAsRdf(entry);
     }
 
-    private void copyStaticFiles(String id) throws IOException {
-        File directory = new File(getDirectory(id), "static");
-        directory.mkdirs();
+    private void copyStaticFiles(String id) throws IOException, StoreException {
         for (Map.Entry<String, JarEntry> entry : entries.entrySet()) {
             if (!entry.getKey().startsWith("static")) {
                 return;
             }
             String path = entry.getKey().substring("static/".length());
-            File target = new File(directory, path);
-            copyEntry(entry.getValue(), target);
+            copyEntry(entry.getValue(), id, "static/" + path);
         }
     }
 
@@ -160,9 +156,8 @@ final class ImportFromJarFile {
         return RepositoryReference.createJar(id);
     }
 
-    private Collection<String> copyDialogFiles(String id) throws IOException {
-        File directory = new File(getDirectory(id), "dialog");
-        directory.mkdirs();
+    private Collection<String> copyDialogFiles(String id)
+            throws IOException, StoreException {
         Set<String> dialogNames = new HashSet<>();
         for (Map.Entry<String, JarEntry> entry : entries.entrySet()) {
             if (!entry.getKey().startsWith("dialog/")) {
@@ -170,19 +165,24 @@ final class ImportFromJarFile {
             }
             String path = entry.getKey().substring("dialog/".length());
             String dialogName = path.substring(0, path.indexOf("/"));
-            File target = new File(directory, path);
-            copyEntry(entry.getValue(), target);
+            copyEntry(entry.getValue(), id, "dialog/" + path);
             dialogNames.add(dialogName);
         }
         return dialogNames;
     }
 
-    private void copyEntry(JarEntry entry, File destination)
-            throws IOException {
-        destination.getParentFile().mkdirs();
+    private void copyEntry(JarEntry entry, String id, String destination)
+            throws IOException, StoreException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data = new byte[4096];
         try (InputStream stream = this.jarFile.getInputStream(entry)) {
-            FileUtils.copyInputStreamToFile(stream, destination);
+            int readSize;
+            while ((readSize = stream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, readSize);
+            }
         }
+        byte[] content = buffer.toByteArray();
+        store.setFile(templateRef(id), destination, content);
     }
 
     private Collection<Statement> readAsRdf(

@@ -3,7 +3,7 @@ package com.linkedpipes.etl.storage.template;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
-import com.linkedpipes.etl.storage.template.repository.TemplateRepository;
+import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.Statement;
 
 import java.util.Collection;
@@ -13,10 +13,10 @@ import java.util.Collection;
  */
 class TemplateLoader {
 
-    private final TemplateRepository repository;
+    private final TemplateStore store;
 
-    public TemplateLoader(TemplateRepository repository) {
-        this.repository = repository;
+    public TemplateLoader(TemplateStore store) {
+        this.store = store;
     }
 
     public Template loadTemplate(RepositoryReference reference)
@@ -35,7 +35,7 @@ class TemplateLoader {
     public JarTemplate loadJarTemplate(
             RepositoryReference reference) throws BaseException {
         Collection<Statement> definition =
-                repository.getDefinition(reference);
+                store.getDefinition(reference);
         JarTemplate template = new JarTemplate();
         template.setId(reference.getId());
         PojoLoader.loadOfType(definition, JarTemplate.TYPE, template);
@@ -45,7 +45,7 @@ class TemplateLoader {
     public ReferenceTemplate loadReferenceTemplate(
             RepositoryReference reference) throws BaseException {
         Collection<Statement> definition =
-                repository.getDefinition(reference);
+                store.getDefinition(reference);
         ReferenceTemplate template = new ReferenceTemplate();
         template.setId(reference.getId());
         PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);

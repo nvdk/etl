@@ -6,7 +6,7 @@ import com.linkedpipes.etl.rdf.utils.vocabulary.SKOS;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
-import com.linkedpipes.etl.storage.template.repository.WritableTemplateRepository;
+import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -26,9 +26,7 @@ class ReferenceFactory {
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    private final TemplateManager manager;
-
-    private final WritableTemplateRepository repository;
+    private final TemplateStore store;
 
     private Resource templateResource = null;
 
@@ -44,10 +42,8 @@ class ReferenceFactory {
 
     private IRI configIri;
 
-    public ReferenceFactory(
-            TemplateManager manager, WritableTemplateRepository repository) {
-        this.manager = manager;
-        this.repository = repository;
+    public ReferenceFactory(TemplateStore store) {
+        this.store = store;
     }
 
     public ReferenceTemplate create(
@@ -67,16 +63,16 @@ class ReferenceFactory {
         List<Statement> configRdf = updateConfig(config);
         //
         RepositoryReference ref = RepositoryReference.createReference(id);
-        repository.setInterface(ref, interfaceRdf);
-        repository.setDefinition(ref, definitionRdf);
-        repository.setConfig(ref, configRdf);
+        store.setInterface(ref, interfaceRdf);
+        store.setDefinition(ref, definitionRdf);
+        store.setConfig(ref, configRdf);
         if (description == null) {
             // Create without description, ReferenceTemplates.
         } else {
-            repository.setConfigDescription(ref, description);
+            store.setConfigDescription(ref, description);
         }
         //
-        TemplateLoader loader = new TemplateLoader(repository);
+        TemplateLoader loader = new TemplateLoader(store);
         return loader.loadReferenceTemplate(
                 RepositoryReference.createReference(id));
     }

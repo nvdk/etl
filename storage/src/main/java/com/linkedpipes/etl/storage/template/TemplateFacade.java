@@ -6,7 +6,8 @@ import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
 import com.linkedpipes.etl.rdf4j.Statements;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
-import com.linkedpipes.etl.storage.template.repository.TemplateRepository;
+import com.linkedpipes.etl.storage.template.store.StoreException;
+import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.unpacker.TemplateSource;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
@@ -41,7 +42,7 @@ public class TemplateFacade implements TemplateSource {
 
     private final MappingFacade mapping;
 
-    private final TemplateRepository repository;
+    private final TemplateStore store;
 
     private final ConfigurationFacade configurationFacade;
 
@@ -52,7 +53,7 @@ public class TemplateFacade implements TemplateSource {
         this.manager = manager;
         this.mapping = mapping;
         this.configurationFacade = new ConfigurationFacade();
-        this.repository = manager.getRepository();
+        this.store = manager.getStore();
     }
 
     @PostConstruct
@@ -180,7 +181,7 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getInterface(Template template)
             throws BaseException {
-        return repository.getInterface(template);
+        return store.getInterface(template);
     }
 
     public Collection<Statement> getInterfaces() throws BaseException {
@@ -222,7 +223,7 @@ public class TemplateFacade implements TemplateSource {
      */
     public Collection<Statement> getConfig(Template template)
             throws BaseException {
-        return repository.getConfig(template);
+        return store.getConfig(template);
     }
 
     /**
@@ -234,13 +235,13 @@ public class TemplateFacade implements TemplateSource {
         IRI graph = valueFactory.createIRI(template.getIri() + "/new");
         if (template.getType() == Template.Type.JAR_TEMPLATE) {
             return configurationFacade.createNewFromJarFile(
-                    (new Statements(repository.getConfig(template))).asList(),
+                    (new Statements(store.getConfig(template))).asList(),
                     (new Statements(getConfigDescription(template))).asList(),
                     graph.stringValue(),
                     graph);
         } else {
             return configurationFacade.createNewFromTemplate(
-                    (new Statements(repository.getConfig(template))).asList(),
+                    (new Statements(store.getConfig(template))).asList(),
                     (new Statements(getConfigDescription(template))).asList(),
                     graph.stringValue(),
                     graph);
@@ -250,16 +251,18 @@ public class TemplateFacade implements TemplateSource {
     public Collection<Statement> getConfigDescription(Template template)
             throws BaseException {
         Template rootTemplate = getRootTemplate(template);
-        return repository.getConfigDescription(rootTemplate);
+        return store.getConfigDescription(rootTemplate);
     }
 
-    public File getDialogResource(
-            Template template, String dialog, String path) {
-        return repository.getDialogFile(template, dialog, path);
+    public byte[] getDialogResource(
+            Template template, String dialog, String path)
+            throws StoreException {
+        return store.getFile(template, "dialog/" + dialog + "/" + path);
     }
 
-    public File getStaticResource(Template template, String path) {
-        return repository.getStaticFile(template, path);
+    public byte[] getStaticResource(Template template, String path)
+            throws StoreException {
+        return store.getFile(template, "static/" + path);
     }
 
     public Template createTemplate(
@@ -299,7 +302,7 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getDefinition(Template template)
             throws BaseException {
-        return repository.getDefinition(template);
+        return store.getDefinition(template);
     }
 
     @Override

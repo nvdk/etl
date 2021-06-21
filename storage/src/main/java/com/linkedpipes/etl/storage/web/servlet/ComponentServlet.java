@@ -8,6 +8,7 @@ import com.linkedpipes.etl.storage.pipeline.info.InfoFacade;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
+import com.linkedpipes.etl.storage.template.store.StoreException;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
@@ -27,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -159,11 +159,11 @@ public class ComponentServlet {
             @RequestParam(name = "name") String dialogName,
             @RequestParam(name = "file") String filePath,
             HttpServletResponse response)
-            throws IOException, MissingResource {
+            throws StoreException, MissingResource, IOException {
         Template template = getTemplate(iri);
-        File file = templateFacade.getDialogResource(
+        byte[] content = templateFacade.getDialogResource(
                 template, dialogName, filePath);
-        if (file == null) {
+        if (content == null) {
             throw new MissingResource(
                     "Missing dialog file: {}/{}", dialogName, filePath);
         }
@@ -173,7 +173,7 @@ public class ComponentServlet {
             response.setHeader("Content-Type", "text/html; charset=UTF-8");
         }
         try (OutputStream stream = response.getOutputStream()) {
-            FileUtils.copyFile(file, stream);
+            stream.write(content);
         }
     }
 
@@ -184,15 +184,15 @@ public class ComponentServlet {
             @RequestParam(name = "iri") String iri,
             @RequestParam(name = "file") String filePath,
             HttpServletResponse response)
-            throws IOException, MissingResource {
+            throws StoreException, MissingResource, IOException {
         Template template = getTemplate(iri);
-        File file = templateFacade.getStaticResource(template, filePath);
-        if (file == null) {
+        byte[] content = templateFacade.getStaticResource(template, filePath);
+        if (content == null) {
             throw new MissingResource(
                     "Missing dialog resource: {}", filePath);
         }
         try (OutputStream stream = response.getOutputStream()) {
-            FileUtils.copyFile(file, stream);
+            stream.write(content);
         }
     }
 
