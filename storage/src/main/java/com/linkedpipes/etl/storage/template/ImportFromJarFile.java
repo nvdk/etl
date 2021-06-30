@@ -4,7 +4,6 @@ import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.jar.JarComponent;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
@@ -76,25 +75,25 @@ final class ImportFromJarFile {
             Resource configGraph = this.valueFactory.createIRI(
                     resource.stringValue() + "/configGraph");
             config = RdfUtils.forceContext(config, configGraph);
-            store.setConfig(templateRef(id), config);
+            store.setPluginConfiguration(id, config);
             // Handle configuration description.
             Collection<Statement> configDesc = loadConfigDescription();
             Resource configDescGraph = this.valueFactory.createIRI(
                     resource.stringValue() + "/configDescGraph");
             configDesc = RdfUtils.forceContext(configDesc, configDescGraph);
-            store.setConfigDescription(templateRef(id), configDesc);
+            store.setPluginConfigurationDescription(id, configDesc);
             // Finalize definition and interface.
             definition = RdfUtils.forceContext(definition, resource);
-            store.setInterface(templateRef(id), definition);
+            store.setPluginInterface(id, definition);
             definition.add(valueFactory.createStatement(resource,
                     valueFactory.createIRI(LP_PIPELINE.HAS_CONFIGURATION_GRAPH),
                     configGraph, resource
             ));
-            store.setDefinition(templateRef(id), definition);
+            store.setPluginDefinition(id, definition);
         } catch (Exception ex) {
             LOG.error("Can't import jar template: {}", component.getIri(), ex);
             try {
-                store.remove(RepositoryReference.createJar(id));
+                store.removePlugin(id);
             } catch (StoreException storeException) {
                 LOG.warn("Can't delete after failure.", storeException);
             }
@@ -152,10 +151,6 @@ final class ImportFromJarFile {
         }
     }
 
-    private RepositoryReference templateRef(String id) {
-        return RepositoryReference.createJar(id);
-    }
-
     private Collection<String> copyDialogFiles(String id)
             throws IOException, StoreException {
         Set<String> dialogNames = new HashSet<>();
@@ -182,7 +177,7 @@ final class ImportFromJarFile {
             }
         }
         byte[] content = buffer.toByteArray();
-        store.setFile(templateRef(id), destination, content);
+        store.setPluginFile(id, destination, content);
     }
 
     private Collection<Statement> readAsRdf(
@@ -201,7 +196,7 @@ final class ImportFromJarFile {
     }
 
     private Resource getTemplateResource(Collection<Statement> statements) {
-        return RdfUtils.find(statements, JarTemplate.TYPE);
+        return RdfUtils.find(statements, PluginTemplate.TYPE);
     }
 
     private Collection<Statement> createDefinitionForDialogs(

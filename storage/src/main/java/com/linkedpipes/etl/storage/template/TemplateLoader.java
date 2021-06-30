@@ -2,7 +2,6 @@ package com.linkedpipes.etl.storage.template;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.rdf.PojoLoader;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.Statement;
 
@@ -19,35 +18,21 @@ class TemplateLoader {
         this.store = store;
     }
 
-    public Template loadTemplate(RepositoryReference reference)
+    public PluginTemplate loadPluginTemplate(String id)
             throws BaseException {
-        switch (reference.getType()) {
-            case JAR_TEMPLATE:
-                return loadJarTemplate(reference);
-            case REFERENCE_TEMPLATE:
-                return loadReferenceTemplate(reference);
-            default:
-                throw new BaseException("No template find for: {}",
-                        reference.getId());
-        }
-    }
-
-    public JarTemplate loadJarTemplate(
-            RepositoryReference reference) throws BaseException {
         Collection<Statement> definition =
-                store.getDefinition(reference);
-        JarTemplate template = new JarTemplate();
-        template.setId(reference.getId());
-        PojoLoader.loadOfType(definition, JarTemplate.TYPE, template);
+                store.getPluginDefinition(id);
+        PluginTemplate template = new PluginTemplate();
+        template.setId(id);
+        PojoLoader.loadOfType(definition, PluginTemplate.TYPE, template);
         return template;
     }
 
-    public ReferenceTemplate loadReferenceTemplate(
-            RepositoryReference reference) throws BaseException {
-        Collection<Statement> definition =
-                store.getDefinition(reference);
+    public ReferenceTemplate loadReferenceTemplate(String id)
+            throws BaseException {
+        Collection<Statement> definition = store.getReferenceDefinition(id);
         ReferenceTemplate template = new ReferenceTemplate();
-        template.setId(reference.getId());
+        template.setId(id);
         PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);
         return template;
     }

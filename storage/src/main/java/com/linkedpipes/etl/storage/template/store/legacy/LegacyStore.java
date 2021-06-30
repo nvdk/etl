@@ -1,15 +1,11 @@
 package com.linkedpipes.etl.storage.template.store.legacy;
 
-import com.linkedpipes.etl.storage.template.Template;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,10 +16,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class LegacyStore implements TemplateStore {
 
@@ -31,8 +30,14 @@ public class LegacyStore implements TemplateStore {
 
     private static final int REFERENCE_CREATE_ATTEMPT = 32;
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(LegacyStore.class);
+    private static final String INTERFACE = "interface";
+
+    private static final String DEFINITION = "definition";
+
+    private static final String CONFIGURATION = "configuration";
+
+    private static final String CONFIGURATION_DESCRIPTION =
+            "configuration-description";
 
     protected final File directory;
 
@@ -46,30 +51,36 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public List<RepositoryReference> getReferences() throws StoreException {
-        List<RepositoryReference> output = new ArrayList<>();
+    public List<String> getPluginIdentifiers() {
+        return listDirectories().stream()
+                .filter(File::isDirectory)
+                .map(File::getName)
+                .filter(name -> name.startsWith("jar-"))
+                .collect(Collectors.toList());
+    }
+
+    protected List<File> listDirectories() {
         File[] files = directory.listFiles();
         if (files == null) {
-            return output;
+            return Collections.emptyList();
         }
-        for (File file : files) {
-            if (!file.isDirectory()) {
-                continue;
-            }
-            if (file.getName().startsWith("jar-")) {
-                output.add(RepositoryReference.createJar(file.getName()));
-            } else {
-                output.add(RepositoryReference.createReference(file.getName()));
-            }
-        }
-        return output;
+        return Arrays.asList(files);
+    }
+
+    @Override
+    public List<String> getReferenceIdentifiers() {
+        return listDirectories().stream()
+                .filter(File::isDirectory)
+                .map(File::getName)
+                .filter(name -> !name.startsWith("jar-"))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String reserveIdentifier() throws StoreException {
         for (int i = 0; i < REFERENCE_CREATE_ATTEMPT; ++i) {
             String id = createId();
-            File path = getDirectory(RepositoryReference.createReference(id));
+            File path = getDirectory(id);
             if (path.mkdir()) {
                 return id;
             }
@@ -81,16 +92,19 @@ public class LegacyStore implements TemplateStore {
         return (new Date()).getTime() + "-" + UUID.randomUUID();
     }
 
-    @Override
-    public Collection<Statement> getInterface(RepositoryReference reference)
-            throws StoreException {
-        return readStatements(reference, "interface");
+    protected File getDirectory(String id) {
+        return new File(directory, id);
     }
 
-    protected Collection<Statement> readStatements(
-            RepositoryReference reference, String fileName)
+    @Override
+    public List<Statement> getPluginInterface(String id)
             throws StoreException {
-        File file = new File(getDirectory(reference), fileName + ".trig");
+        return readStatements(id, INTERFACE);
+    }
+
+    protected List<Statement> readStatements(String id, String fileName)
+            throws StoreException {
+        File file = new File(getDirectory(id), fileName + ".trig");
         try (InputStream stream = new FileInputStream(file)) {
             return new ArrayList<>(Rio.parse(stream, RDFFormat.TRIG));
         } catch (IOException | RuntimeException ex) {
@@ -98,22 +112,16 @@ public class LegacyStore implements TemplateStore {
         }
     }
 
-    protected File getDirectory(RepositoryReference ref) {
-        return new File(directory, ref.getId());
-    }
-
     @Override
-    public void setInterface(
-            RepositoryReference reference, Collection<Statement> statements)
-            throws StoreException {
-        saveStatements(reference, "interface", statements);
+    public void setPluginInterface(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, INTERFACE, statements);
     }
 
     protected void saveStatements(
-            RepositoryReference reference,
-            String fileName, Collection<Statement> statements)
+            String id, String fileName, Collection<Statement> statements)
             throws StoreException {
-        File file = new File(getDirectory(reference), fileName + ".trig");
+        File file = new File(id, fileName + ".trig");
         file.getParentFile().mkdirs();
         try (OutputStream stream = new FileOutputStream(file)) {
             Rio.write(statements, stream, RDFFormat.TRIG);
@@ -123,48 +131,82 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public Collection<Statement> getDefinition(RepositoryReference reference)
+    public List<Statement> getReferenceInterface(String id)
             throws StoreException {
-        return readStatements(reference, "definition");
+        return readStatements(id, INTERFACE);
     }
 
     @Override
-    public void setDefinition(
-            RepositoryReference reference, Collection<Statement> statements)
-            throws StoreException {
-        saveStatements(reference, "definition", statements);
+    public void setReferenceInterface(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, INTERFACE, statements);
     }
 
     @Override
-    public Collection<Statement> getConfig(RepositoryReference reference)
+    public List<Statement> getPluginDefinition(String id)
             throws StoreException {
-        return readStatements(reference, "configuration");
+        return readStatements(id, DEFINITION);
     }
 
     @Override
-    public void setConfig(
-            RepositoryReference reference, Collection<Statement> statements)
-            throws StoreException {
-        saveStatements(reference, "configuration", statements);
+    public void setPluginDefinition(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, DEFINITION, statements);
     }
 
     @Override
-    public Collection<Statement> getConfigDescription(
-            RepositoryReference reference) throws StoreException {
-        return readStatements(reference, "configuration-description");
+    public Collection<Statement> getReferenceDefinition(String id)
+            throws StoreException {
+        return readStatements(id, DEFINITION);
     }
 
     @Override
-    public void setConfigDescription(
-            RepositoryReference reference, Collection<Statement> statements)
-            throws StoreException {
-        saveStatements(reference, "configuration-description", statements);
+    public void setReferenceDefinition(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, DEFINITION, statements);
     }
 
     @Override
-    public byte[] getFile(RepositoryReference reference, String path)
+    public List<Statement> getPluginConfiguration(String id)
             throws StoreException {
-        Path pathToFile = getFilePath(reference, path);
+        return readStatements(id, CONFIGURATION);
+    }
+
+    @Override
+    public void setPluginConfiguration(
+            String id, Collection<Statement> statements)
+            throws StoreException {
+        saveStatements(id, CONFIGURATION, statements);
+    }
+
+    @Override
+    public List<Statement> getReferenceConfiguration(
+            String id) throws StoreException {
+        return readStatements(id, CONFIGURATION);
+    }
+
+    @Override
+    public void setReferenceConfiguration(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, CONFIGURATION, statements);
+    }
+
+    @Override
+    public List<Statement> getPluginConfigurationDescription(String id)
+            throws StoreException {
+        return readStatements(id, CONFIGURATION_DESCRIPTION);
+    }
+
+    @Override
+    public void setPluginConfigurationDescription(
+            String id, Collection<Statement> statements) throws StoreException {
+        saveStatements(id, CONFIGURATION_DESCRIPTION, statements);
+    }
+
+    @Override
+    public byte[] getPluginFile(String id, String path)
+            throws StoreException {
+        Path pathToFile = getFilePath(id, path);
         try {
             return Files.readAllBytes(pathToFile);
         } catch (IOException ex) {
@@ -172,32 +214,35 @@ public class LegacyStore implements TemplateStore {
         }
     }
 
-    protected Path getFilePath(RepositoryReference reference, String path) {
-        if (reference.getType() != Template.Type.JAR_TEMPLATE) {
-            return null;
-        }
-        return (new File(getDirectory(reference), path)).toPath();
+    protected Path getFilePath(String id, String path) {
+        return (new File(getDirectory(id), path)).toPath();
     }
 
     @Override
-    public void setFile(
-            RepositoryReference reference, String path, byte[] content)
+    public void setPluginFile(String id, String path, byte[] content)
             throws StoreException {
-        Path pathToFile = getFilePath(reference, path);
+        Path pathToFile = getFilePath(id, path);
         pathToFile.getParent().toFile().mkdirs();
         try {
             Files.write(pathToFile, content);
         } catch (IOException ex) {
             throw new StoreException("Can't read file.", ex);
         }
-
     }
 
     @Override
-    public void remove(RepositoryReference reference) throws StoreException {
-        File dir = getDirectory(reference);
+    public void removePlugin(String id) throws StoreException {
+        File dir = getDirectory(id);
         if (!FileUtils.deleteQuietly(dir)) {
-            LOG.warn("Can not delete: {}", dir);
+            throw new StoreException("Can't delete directory with template");
+        }
+    }
+
+    @Override
+    public void removeReference(String id) throws StoreException {
+        File dir = getDirectory(id);
+        if (!FileUtils.deleteQuietly(dir)) {
+            throw new StoreException("Can't delete directory with template");
         }
     }
 

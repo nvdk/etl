@@ -5,7 +5,6 @@ import com.linkedpipes.etl.rdf.utils.vocabulary.DCTERMS;
 import com.linkedpipes.etl.rdf.utils.vocabulary.SKOS;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -49,7 +48,6 @@ class ReferenceFactory {
     public ReferenceTemplate create(
             Collection<Statement> content,
             Collection<Statement> config,
-            Collection<Statement> description,
             String id, String iriAsString)
             throws BaseException {
         clear();
@@ -62,19 +60,12 @@ class ReferenceFactory {
         List<Statement> definitionRdf = createDefinition();
         List<Statement> configRdf = updateConfig(config);
         //
-        RepositoryReference ref = RepositoryReference.createReference(id);
-        store.setInterface(ref, interfaceRdf);
-        store.setDefinition(ref, definitionRdf);
-        store.setConfig(ref, configRdf);
-        if (description == null) {
-            // Create without description, ReferenceTemplates.
-        } else {
-            store.setConfigDescription(ref, description);
-        }
+        store.setReferenceInterface(id, interfaceRdf);
+        store.setReferenceDefinition(id, definitionRdf);
+        store.setReferenceConfiguration(id, configRdf);
         //
         TemplateLoader loader = new TemplateLoader(store);
-        return loader.loadReferenceTemplate(
-                RepositoryReference.createReference(id));
+        return loader.loadReferenceTemplate(id);
     }
 
     public static String createConfigurationIri(String templateIri) {
@@ -90,7 +81,7 @@ class ReferenceFactory {
             throws BaseException {
         Resource resource = RdfUtils.find(statements, ReferenceTemplate.TYPE);
         if (resource == null) {
-            throw new BaseException("Missing resource of reference type");
+            throw new BaseException("Missing resource of iderence type");
         }
         for (Statement statement : statements) {
             switch (statement.getPredicate().stringValue()) {
@@ -114,7 +105,7 @@ class ReferenceFactory {
             }
         }
         if (templateResource == null) {
-            throw new BaseException("Missing template reference.");
+            throw new BaseException("Missing template iderence.");
         }
     }
 

@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class JarTemplate extends Template implements PojoLoader.Loadable {
+public class PluginTemplate extends Template implements PojoLoader.Loadable {
 
     public static final IRI TYPE;
 
@@ -41,19 +41,22 @@ public class JarTemplate extends Template implements PojoLoader.Loadable {
         return null;
     }
 
-    @Override
-    public Type getType() {
-        return Type.JAR_TEMPLATE;
-    }
-
-    @Override
     public boolean isSupportingControl() {
         return supportControl;
     }
 
-    @Override
     public String getConfigurationDescription() {
         return configurationDescription;
+    }
+
+    @Override
+    public boolean isPlugin() {
+        return true;
+    }
+
+    @Override
+    public boolean isReference() {
+        return false;
     }
 
 }

@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,7 +93,7 @@ public class TemplateFacade implements TemplateSource {
     }
 
     public Template getRootTemplate(Template template) {
-        if (template instanceof JarTemplate) {
+        if (template instanceof PluginTemplate) {
             return template;
         } else if (template instanceof ReferenceTemplate) {
             ReferenceTemplate referenceTemplate = (ReferenceTemplate) template;
@@ -118,9 +117,9 @@ public class TemplateFacade implements TemplateSource {
         LinkedList<Template> output = new LinkedList<>();
         while (true) {
             output.add(template);
-            if (template.getType() == Template.Type.JAR_TEMPLATE) {
+            if (template.isPlugin()) {
                 break;
-            } else if (template.getType() == Template.Type.REFERENCE_TEMPLATE) {
+            } else if (template.isReference()) {
                 ReferenceTemplate reference = (ReferenceTemplate) template;
                 template = getTemplate(reference.getTemplate());
                 if (template == null) {
@@ -129,7 +128,7 @@ public class TemplateFacade implements TemplateSource {
                 }
             } else {
                 throw new RuntimeException("Unknown template type: "
-                        + template.getType().name());
+                        + template.getId());
             }
         }
         return output;
@@ -166,7 +165,7 @@ public class TemplateFacade implements TemplateSource {
     private Map<Template, List<Template>> buildChildrenIndex() {
         Map<Template, List<Template>> children = new HashMap<>();
         for (Template item : getTemplates()) {
-            if (item.getType() != Template.Type.REFERENCE_TEMPLATE) {
+            if (!item.isReference()) {
                 continue;
             }
             ReferenceTemplate reference = (ReferenceTemplate) item;
@@ -181,7 +180,13 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getInterface(Template template)
             throws BaseException {
-        return store.getInterface(template);
+        if (template.isPlugin()) {
+            return store.getPluginInterface(template.getId());
+        } else if (template.isReference()) {
+            return store.getReferenceInterface(template.getId());
+        } else {
+            throw new BaseException("Unknown template: {}", template.getId());
+        }
     }
 
     public Collection<Statement> getInterfaces() throws BaseException {
@@ -198,8 +203,8 @@ public class TemplateFacade implements TemplateSource {
      */
     public Collection<Statement> getConfigEffective(Template template)
             throws BaseException, InvalidConfiguration {
-        // TODO Move to extra class and add caching.
-        if (!template.isSupportingControl()) {
+        if (template.isPlugin()
+                && ((PluginTemplate)template).isSupportingControl()) {
             // For template without inheritance control, the current
             // configuration is the effective one.
             return getConfig(template);
@@ -223,7 +228,14 @@ public class TemplateFacade implements TemplateSource {
      */
     public Collection<Statement> getConfig(Template template)
             throws BaseException {
-        return store.getConfig(template);
+        if (template.isPlugin()) {
+            return store.getPluginConfiguration(template.getId());
+        } else if (template.isReference()) {
+            return store.getReferenceConfiguration(template.getId());
+        } else {
+            throw new BaseException("Unknown template type: {}",
+                    template.getId());
+        }
     }
 
     /**
@@ -233,95 +245,90 @@ public class TemplateFacade implements TemplateSource {
             throws BaseException, InvalidConfiguration {
         ValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI graph = valueFactory.createIRI(template.getIri() + "/new");
-        if (template.getType() == Template.Type.JAR_TEMPLATE) {
+        if (template.isPlugin()) {
             return configurationFacade.createNewFromJarFile(
-                    (new Statements(store.getConfig(template))).asList(),
-                    (new Statements(getConfigDescription(template))).asList(),
+                    store.getPluginConfiguration(template.getId()),
+                    getConfigDescription(template),
+                    graph.stringValue(),
+                    graph);
+        } else if (template.isReference()) {
+            return configurationFacade.createNewFromTemplate(
+                    store.getReferenceConfiguration(template.getId()),
+                    getConfigDescription(template),
                     graph.stringValue(),
                     graph);
         } else {
-            return configurationFacade.createNewFromTemplate(
-                    (new Statements(store.getConfig(template))).asList(),
-                    (new Statements(getConfigDescription(template))).asList(),
-                    graph.stringValue(),
-                    graph);
+            throw new BaseException("Unknown template type: {}",
+                    template.getId());
         }
     }
 
-    public Collection<Statement> getConfigDescription(Template template)
+    public List<Statement> getConfigDescription(Template template)
             throws BaseException {
-        Template rootTemplate = getRootTemplate(template);
-        return store.getConfigDescription(rootTemplate);
+        Template root = getRootTemplate(template);
+        if (!root.isPlugin()) {
+            throw new BaseException(
+                    "Root template '{}' is not a plugin for '{}'",
+                    root.getId(), template.getId());
+        }
+        return store.getPluginConfigurationDescription(root.getId());
     }
 
     public byte[] getDialogResource(
             Template template, String dialog, String path)
             throws StoreException {
-        return store.getFile(template, "dialog/" + dialog + "/" + path);
+        return store.getPluginFile(
+                template.getId(), "dialog/" + dialog + "/" + path);
     }
 
     public byte[] getStaticResource(Template template, String path)
             throws StoreException {
-        return store.getFile(template, "static/" + path);
+        return store.getPluginFile(
+                template.getId(), "static/" + path);
     }
 
-    public Template createTemplate(
+    public Template createReferenceTemplate(
             Collection<Statement> definition,
             Collection<Statement> configuration)
             throws BaseException {
-        return createTemplate(definition, configuration, null);
+        return manager.createReferenceTemplate(definition, configuration);
     }
 
-    public Template createTemplate(
-            Collection<Statement> definition,
-            Collection<Statement> configuration,
-            Collection<Statement> configurationDescription)
+    public void updateReferenceInterface(
+            ReferenceTemplate template, Collection<Statement> diff)
             throws BaseException {
-        Template template = manager.createTemplate(
-                definition, configuration, configurationDescription);
-        return template;
-    }
-
-    public void updateInterface(
-            Template template, Collection<Statement> diff)
-            throws BaseException {
-        manager.updateTemplateInterface(template, diff);
+        manager.updateReferenceTemplateInterface(template, diff);
     }
 
     public void updateConfig(
             Template template, Collection<Statement> statements)
             throws BaseException {
-        manager.updateConfig(template, statements);
+        manager.updateReferenceConfiguration(template, statements);
     }
 
-    public void remove(Template template) throws BaseException {
-        manager.remove(template);
+    public void removeReference(ReferenceTemplate template)
+            throws BaseException {
+        manager.removeReference(template);
         mapping.remove(template.getIri());
         mapping.save();
     }
 
     public Collection<Statement> getDefinition(Template template)
             throws BaseException {
-        return store.getDefinition(template);
+        if (template.isPlugin()) {
+            return store.getPluginDefinition(template.getId());
+        } else if (template.isReference()) {
+            return store.getReferenceDefinition(template.getId());
+        } else {
+            throw new BaseException("Unknown template: {}", template.getId());
+        }
     }
 
     @Override
     public Collection<Statement> getDefinition(String iri)
             throws BaseException {
         Template template = getTemplate(iri);
-        // It requires reference to description which is not presented for
-        // reference templates.
-        Statements output = new Statements(getDefinition(template));
-        output.setDefaultGraph(iri);
-        if (Template.Type.REFERENCE_TEMPLATE.equals(template.getType())) {
-            ValueFactory valueFactory = SimpleValueFactory.getInstance();
-            output.addIri(
-                    valueFactory.createIRI(iri),
-                    LP_PIPELINE.HAS_CONFIGURATION_ENTITY_DESCRIPTION,
-                    template.getConfigurationDescription()
-            );
-        }
-        return output;
+        return getDefinition(template);
     }
 
     @Override

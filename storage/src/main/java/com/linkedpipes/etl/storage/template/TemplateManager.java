@@ -6,11 +6,11 @@ import com.linkedpipes.etl.storage.jar.JarComponent;
 import com.linkedpipes.etl.storage.jar.JarFacade;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.migration.MigrateStore;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.template.store.TemplateStoreService;
+import com.sun.source.util.Plugin;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -97,21 +97,30 @@ public class TemplateManager {
 
     private void importTemplates() throws StoreException {
         TemplateLoader loader = new TemplateLoader(store);
-        List<ReferenceTemplate> referenceTemplates = new ArrayList<>();
-        for (RepositoryReference reference : store.getReferences()) {
+        for (String id : store.getPluginIdentifiers()) {
             try {
-                Template template = loader.loadTemplate(reference);
+                PluginTemplate template = loader.loadPluginTemplate(id);
                 if (template.getIri() == null) {
-                    LOG.error("Invalid template ignored: {}",
-                            reference.getId());
+                    LOG.error("Invalid template ignored: {}", id);
                     continue;
-                }
-                if (template instanceof ReferenceTemplate) {
-                    referenceTemplates.add((ReferenceTemplate) template);
                 }
                 templates.put(template.getIri(), template);
             } catch (Exception ex) {
-                LOG.error("Can't load template: {}", reference.getId(), ex);
+                LOG.error("Can't load template: {}", id, ex);
+            }
+        }
+        List<ReferenceTemplate> referenceTemplates = new ArrayList<>();
+        for (String id : store.getReferenceIdentifiers()) {
+            try {
+                ReferenceTemplate template = loader.loadReferenceTemplate(id);
+                if (template.getIri() == null) {
+                    LOG.error("Invalid template ignored: {}", id);
+                    continue;
+                }
+                referenceTemplates.add(template);
+                templates.put(template.getIri(), template);
+            } catch (Exception ex) {
+                LOG.error("Can't load template: {}", id, ex);
             }
         }
         setTemplateCoreReferences(referenceTemplates);
@@ -123,36 +132,31 @@ public class TemplateManager {
         }
     }
 
-    private JarTemplate findCoreTemplate(ReferenceTemplate template) {
+    private PluginTemplate findCoreTemplate(ReferenceTemplate template) {
         while (true) {
             Template parent = templates.get(template.getTemplate());
             if (parent == null) {
                 LOG.error("Missing parent for: {}", template.getIri());
                 return null;
             }
-            switch (parent.getType()) {
-                case JAR_TEMPLATE:
-                    return (JarTemplate) parent;
-                case REFERENCE_TEMPLATE:
-                    template = (ReferenceTemplate) parent;
-                    break;
-                default:
-                    LOG.error("Invalid template type: {}",
-                            parent.getIri());
-                    return null;
+            if (parent.isPlugin()) {
+                return (PluginTemplate) parent;
+            } else if (parent.isReference()) {
+                template = (ReferenceTemplate) parent;
+            } else {
+                LOG.error("Invalid template type: {}", parent.getIri());
+                return null;
             }
         }
     }
-
 
     public Map<String, Template> getTemplates() {
         return Collections.unmodifiableMap(templates);
     }
 
-    public Template createTemplate(
+    public Template createReferenceTemplate(
             Collection<Statement> interfaceRdf,
-            Collection<Statement> configurationRdf,
-            Collection<Statement> descriptionRdf)
+            Collection<Statement> configurationRdf)
             throws BaseException {
         String id = store.reserveIdentifier();
         String iri = configuration.getDomainName()
@@ -160,27 +164,25 @@ public class TemplateManager {
         ReferenceFactory factory = new ReferenceFactory(store);
         try {
             ReferenceTemplate template = factory.create(
-                    interfaceRdf, configurationRdf,
-                    descriptionRdf, id, iri);
+                    interfaceRdf, configurationRdf, id, iri);
             template.setCoreTemplate(findCoreTemplate(template));
             templates.put(template.getIri(), template);
             return template;
         } catch (BaseException ex) {
-            store.remove(RepositoryReference.createReference(id));
+            store.removeReference(id);
             throw ex;
         }
     }
 
-    public void updateTemplateInterface(
-            Template template, Collection<Statement> diff)
+    public void updateReferenceTemplateInterface(
+            ReferenceTemplate template, Collection<Statement> diff)
             throws BaseException {
-        if (template.getType() != Template.Type.REFERENCE_TEMPLATE) {
-            throw new BaseException("Only reference templates can be updated");
-        }
         diff = RdfUtils.forceContext(diff, template.getIri());
-        Collection<Statement> newInterface =
-                update(store.getInterface(template), diff);
-        store.setInterface(template, newInterface);
+        String id = template.getId();
+        Collection<Statement> oldInterface = store.getReferenceInterface(id);
+        Collection<Statement> newInterface = update(oldInterface, diff);
+        store.setReferenceInterface(id, newInterface);
+        store.setReferenceDefinition(id, newInterface);
     }
 
     private List<Statement> update(
@@ -214,23 +216,20 @@ public class TemplateManager {
         ).collect(Collectors.toList());
     }
 
-    public void updateConfig(
+    public void updateReferenceConfiguration(
             Template template, Collection<Statement> statements)
             throws BaseException {
         ValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI graph = valueFactory.createIRI(
                 template.getIri() + "/configuration");
         statements = RdfUtils.forceContext(statements, graph);
-        store.setConfig(template, statements);
+        store.setReferenceConfiguration(template.getId(), statements);
     }
 
-    public void remove(Template template) throws BaseException {
-        if (template.getType() != Template.Type.REFERENCE_TEMPLATE) {
-            throw new BaseException("Can't delete non-reference template: {}",
-                    template.getIri());
-        }
+    public void removeReference(ReferenceTemplate template)
+            throws BaseException {
         templates.remove(template.getIri());
-        store.remove(template);
+        store.removeReference(template.getId());
     }
 
 }

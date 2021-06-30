@@ -26,7 +26,7 @@ public class ReferenceTemplate extends Template
      */
     private String template;
 
-    private JarTemplate coreTemplate;
+    private PluginTemplate coreTemplate;
 
     public String getTemplate() {
         return template;
@@ -54,32 +54,22 @@ public class ReferenceTemplate extends Template
         return iri;
     }
 
-    @Override
-    public Type getType() {
-        return Type.REFERENCE_TEMPLATE;
+    PluginTemplate getCoreTemplate() {
+        return coreTemplate;
     }
 
-    @Override
-    public boolean isSupportingControl() {
-        // Every reference support control as its parent support control,
-        // because we have template from it.
-        return true;
-    }
-
-    @Override
-    public String getConfigurationDescription() {
-        if (coreTemplate == null) {
-            throw new RuntimeException("Missing core template reference.");
-        }
-        return coreTemplate.getConfigurationDescription();
-    }
-
-    void setCoreTemplate(JarTemplate coreTemplate) {
+    void setCoreTemplate(PluginTemplate coreTemplate) {
         this.coreTemplate = coreTemplate;
     }
 
-    JarTemplate getCoreTemplate() {
-        return coreTemplate;
+    @Override
+    public boolean isPlugin() {
+        return false;
+    }
+
+    @Override
+    public boolean isReference() {
+        return true;
     }
 
 }

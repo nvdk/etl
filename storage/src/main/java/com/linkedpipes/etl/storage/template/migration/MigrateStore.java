@@ -1,9 +1,7 @@
 package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.storage.BaseException;
-import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
@@ -48,10 +46,7 @@ public class MigrateStore implements TemplatesInformation {
         StoreInfo result = info.clone();
         result.templateVersion = TemplateStoreService.LATEST_VERSION;
         loadRoots();
-        for (RepositoryReference reference : source.getReferences()) {
-            if (Template.Type.JAR_TEMPLATE.equals(reference.getType())) {
-                continue;
-            }
+        for (String reference : source.getReferenceIdentifiers()) {
             migrateReference(reference);
         }
         LOG.info("Migrating store from {} {} to {} {} ... done",
@@ -60,26 +55,24 @@ public class MigrateStore implements TemplatesInformation {
         return result;
     }
 
-    protected void loadRoots()
-            throws BaseException {
+    /**
+     * Load roots from the reference templates, does not check for existence
+     * of the roots (plugin templates).
+     */
+    protected void loadRoots() throws BaseException {
         Map<String, String> parents = new HashMap<>();
-        for (RepositoryReference reference : source.getReferences()) {
-            Statements statements =
-                    Statements.wrap(source.getInterface(reference));
+        for (String id : source.getReferenceIdentifiers()) {
+            Statements statements = Statements.wrap(
+                    source.getReferenceInterface(id));
             Resource resource = TemplateReader.readResource(statements);
             if (resource == null) {
-                LOG.error("Can't find resource for: {}", reference.getId());
+                LOG.error("Can't find resource for: {}", id);
                 continue;
             }
             //
-            Resource parent;
-            if (isReference(reference)) {
-                parent = TemplateReader.readParent(resource, statements);
-            } else {
-                parent = resource;
-            }
+            Resource parent = TemplateReader.readParent(resource, statements);
             if (parent == null) {
-                LOG.error("Can't read parent for: {}", reference.getId());
+                LOG.error("Can't read parent for: {}", id);
                 continue;
             }
             parents.put(resource.stringValue(), parent.stringValue());
@@ -90,7 +83,7 @@ public class MigrateStore implements TemplatesInformation {
             String root = identifier;
             while (parents.containsKey(root)) {
                 String ancestor = parents.get(root);
-                if (ancestor == root) {
+                if (ancestor.equals(root)) {
                     // We reach the root.
                     break;
                 }
@@ -100,37 +93,32 @@ public class MigrateStore implements TemplatesInformation {
         }
     }
 
-    protected boolean isReference(RepositoryReference reference) {
-        return Template.Type.REFERENCE_TEMPLATE.equals(reference.getType());
-    }
-
     @Override
     public String getRoot(String identifier) {
         return roots.get(identifier);
     }
 
-    protected void migrateReference(RepositoryReference reference)
-            throws BaseException {
-        ReferenceContainer container = loadToContainer(reference);
+    protected void migrateReference(String id) throws BaseException {
+        ReferenceContainer container = loadReferenceToContainer(id);
         int version = info.templateVersion;
         MigrateTemplate migrateTemplate = new MigrateTemplate(this);
         container = migrateTemplate.migrateReferenceTemplate(
                 container, version);
         // Store to the new repository. The interface and
         // definition are the same for reference templates.
-        target.setInterface(reference, container.definition);
-        target.setDefinition(reference, container.definition);
-        target.setConfig(reference, container.configuration);
+        target.setReferenceInterface(id, container.definition);
+        target.setReferenceDefinition(id, container.definition);
+        target.setReferenceConfiguration(id, container.configuration);
     }
 
-    protected ReferenceContainer loadToContainer(
-            RepositoryReference reference) throws StoreException {
+    protected ReferenceContainer loadReferenceToContainer(
+            String id) throws StoreException {
         ReferenceContainer result = new ReferenceContainer();
         result.definition = Statements.set();
-        result.definition.addAll(source.getInterface(reference));
-        result.definition.addAll(source.getDefinition(reference));
+        result.definition.addAll(source.getReferenceDefinition(id));
+        result.definition.addAll(source.getReferenceInterface(id));
         result.configuration = Statements.set();
-        result.configuration.addAll(source.getConfig(reference));
+        result.configuration.addAll(source.getReferenceConfiguration(id));
         result.resource = TemplateReader.readResource(result.definition);
         return result;
     }

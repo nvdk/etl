@@ -4,6 +4,7 @@ import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.migration.MigrateV1ToV2;
 import com.linkedpipes.etl.storage.pipeline.Pipeline;
+import com.linkedpipes.etl.storage.template.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
 import com.linkedpipes.etl.storage.template.mapping.Mapping;
@@ -160,17 +161,17 @@ class ImportTemplates {
             }
         } else {
             LOG.debug("Mapping {} to {}", template.getIri(), templateIri);
-            if (updateExisting) {
+            if (updateExisting && mappedLocalTemplate.isReference()) {
                 LOG.info("Updating local template: {}", templateIri);
-                updateLocal(template, mappedLocalTemplate);
+                updateLocal(template, (ReferenceTemplate) mappedLocalTemplate);
             }
             return true;
         }
     }
 
-    private void updateLocal(TemplateInfo remote, Template local)
+    private void updateLocal(TemplateInfo remote, ReferenceTemplate local)
             throws BaseException {
-        templateFacade.updateInterface(local, remote.getDefinition());
+        templateFacade.updateReferenceInterface(local, remote.getDefinition());
         Template parent = templateFacade.getParent(local);
         prepareTemplateForImport(remote, parent);
         Collection<Statement> config = remote.getConfiguration();
@@ -200,10 +201,9 @@ class ImportTemplates {
         remoteTemplate.setTemplate(valueFactory.createIRI(parent.getIri()));
         prepareTemplateForImport(remoteTemplate, parent);
         try {
-            Template template = templateFacade.createTemplate(
+            Template template = templateFacade.createReferenceTemplate(
                     remoteTemplate.getDefinition(),
-                    remoteTemplate.getConfiguration(),
-                    getConfigDescription(remoteTemplate, parent));
+                    remoteTemplate.getConfiguration());
             LOG.info("   imported as : {}", template.getIri());
             this.mapping.onImport(template, remoteTemplate.getIri());
         } catch (BaseException ex) {
@@ -223,15 +223,6 @@ class ImportTemplates {
         } else {
             return localTemplate;
         }
-    }
-
-    private Collection<Statement> getConfigDescription(
-            TemplateInfo templateInfo, Template parent) {
-        // We used to use description from the pipeline, but as there
-        // is no versioning that cause issues with old versions
-        // - upon configuration change. For this reason we always
-        // use descriptions from root templates.
-        return null;
     }
 
     private void saveMappingsToHdd() {
@@ -303,7 +294,6 @@ class ImportTemplates {
             String predicate = statement.getPredicate().stringValue();
             if (predicate.equals(LP_PIPELINE.HAS_CONFIGURATION_GRAPH)) {
                 configurations.add((Resource) statement.getObject());
-                continue;
             }
         }
         // Collect.

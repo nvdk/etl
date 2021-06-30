@@ -6,10 +6,10 @@ import com.linkedpipes.etl.storage.pipeline.Pipeline;
 import com.linkedpipes.etl.storage.pipeline.PipelineFacade;
 import com.linkedpipes.etl.storage.pipeline.info.InfoFacade;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
+import com.linkedpipes.etl.storage.template.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
 import com.linkedpipes.etl.storage.template.store.StoreException;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -94,7 +94,12 @@ public class ComponentServlet {
             @RequestParam(name = "component") MultipartFile componentRdf)
             throws BaseException {
         Template template = getTemplate(iri);
-        templateFacade.updateInterface(template, RdfUtils.read(componentRdf));
+        if (template.isReference()) {
+            templateFacade.updateReferenceInterface(
+                    (ReferenceTemplate) template, RdfUtils.read(componentRdf));
+        } else {
+            throw new BaseException("This template can not be updated.");
+        }
     }
 
     @RequestMapping(value = "/config", method = RequestMethod.GET)
@@ -207,7 +212,7 @@ public class ComponentServlet {
         Collection<Statement> componentRdf = RdfUtils.read(component);
         Collection<Statement> configurationRdf = RdfUtils.read(configuration);
         // Create template and stream interface as a response.
-        Template template = templateFacade.createTemplate(
+        Template template = templateFacade.createReferenceTemplate(
                 componentRdf, configurationRdf);
         try (OutputStream stream = response.getOutputStream()) {
             RdfUtils.write(stream, getFormat(request),
@@ -264,8 +269,12 @@ public class ComponentServlet {
             HttpServletResponse response)
             throws BaseException {
         Template template = getTemplate(iri);
-        templateFacade.remove(template);
-        response.setStatus(HttpServletResponse.SC_OK);
+        if (template.isReference()) {
+            templateFacade.removeReference((ReferenceTemplate) template);
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            throw new BaseException("This template can not be removed.");
+        }
     }
 
     private static RDFFormat getFormat(HttpServletRequest request) {

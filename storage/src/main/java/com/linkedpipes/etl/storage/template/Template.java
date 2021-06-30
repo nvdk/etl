@@ -1,13 +1,6 @@
 package com.linkedpipes.etl.storage.template;
 
-import com.linkedpipes.etl.storage.template.repository.RepositoryReference;
-
-public abstract class Template implements RepositoryReference {
-
-    public enum Type {
-        JAR_TEMPLATE,
-        REFERENCE_TEMPLATE
-    }
+public abstract class Template {
 
     protected String id;
 
@@ -29,11 +22,8 @@ public abstract class Template implements RepositoryReference {
         this.iri = iri;
     }
 
-    /**
-     * Return true if component support configuration control/inheritance.
-     */
-    public abstract boolean isSupportingControl();
+    public abstract boolean isPlugin();
 
-    public  abstract String getConfigurationDescription();
+    public abstract boolean isReference();
 
 }
