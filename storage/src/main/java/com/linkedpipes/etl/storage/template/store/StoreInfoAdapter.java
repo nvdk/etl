@@ -43,12 +43,10 @@ public class StoreInfoAdapter {
         StoreInfo result = new StoreInfo();
         if (root.has("version")) {
             int version = root.get("version").asInt();
-            ;
             result.templateVersion = version;
         }
         if (root.has("templateVersion")) {
             int version = root.get("templateVersion").asInt();
-            ;
             result.templateVersion = version;
         }
         if (root.has("repository")) {
