@@ -4,13 +4,17 @@ import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.Configuration;
 import com.linkedpipes.etl.storage.jar.JarComponent;
 import com.linkedpipes.etl.storage.jar.JarFacade;
+import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.migration.MigrateStore;
+import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
+import com.linkedpipes.etl.storage.template.plugin.PluginTemplateFactory;
+import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
+import com.linkedpipes.etl.storage.template.reference.ReferenceTemplateFactory;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.template.store.TemplateStoreService;
-import com.sun.source.util.Plugin;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -80,10 +84,10 @@ public class TemplateManager {
     }
 
     private void importJarFiles() {
-        ImportFromJarFile copyJarTemplates =
-                new ImportFromJarFile(store);
+        PluginTemplateFactory copyJarTemplates =
+                new PluginTemplateFactory(store);
         for (JarComponent item : jarFacade.getJarComponents()) {
-            copyJarTemplates.importJarComponent(item);
+            copyJarTemplates.create(item);
         }
     }
 
@@ -96,10 +100,9 @@ public class TemplateManager {
     }
 
     private void importTemplates() throws StoreException {
-        TemplateLoader loader = new TemplateLoader(store);
         for (String id : store.getPluginIdentifiers()) {
             try {
-                PluginTemplate template = loader.loadPluginTemplate(id);
+                PluginTemplate template = loadPluginTemplate(id);
                 if (template.getIri() == null) {
                     LOG.error("Invalid template ignored: {}", id);
                     continue;
@@ -112,7 +115,7 @@ public class TemplateManager {
         List<ReferenceTemplate> referenceTemplates = new ArrayList<>();
         for (String id : store.getReferenceIdentifiers()) {
             try {
-                ReferenceTemplate template = loader.loadReferenceTemplate(id);
+                ReferenceTemplate template = loadReferenceTemplate(id);
                 if (template.getIri() == null) {
                     LOG.error("Invalid template ignored: {}", id);
                     continue;
@@ -124,6 +127,24 @@ public class TemplateManager {
             }
         }
         setTemplateCoreReferences(referenceTemplates);
+    }
+
+    private ReferenceTemplate loadReferenceTemplate(String id)
+            throws BaseException {
+        Collection<Statement> definition = store.getReferenceDefinition(id);
+        ReferenceTemplate template = new ReferenceTemplate();
+        template.setId(id);
+        PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);
+        return template;
+    }
+
+    private PluginTemplate loadPluginTemplate(String id)
+            throws BaseException {
+        Collection<Statement> definition = store.getPluginDefinition(id);
+        PluginTemplate template = new PluginTemplate();
+        template.setId(id);
+        PojoLoader.loadOfType(definition, PluginTemplate.TYPE, template);
+        return template;
     }
 
     private void setTemplateCoreReferences(List<ReferenceTemplate> templates) {
@@ -161,7 +182,7 @@ public class TemplateManager {
         String id = store.reserveIdentifier();
         String iri = configuration.getDomainName()
                 + "/resources/components/" + id;
-        ReferenceFactory factory = new ReferenceFactory(store);
+        ReferenceTemplateFactory factory = new ReferenceTemplateFactory(store);
         try {
             ReferenceTemplate template = factory.create(
                     interfaceRdf, configurationRdf, id, iri);

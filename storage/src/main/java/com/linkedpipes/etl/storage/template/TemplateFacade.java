@@ -1,11 +1,12 @@
 package com.linkedpipes.etl.storage.template;
 
-import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.plugin.configuration.ConfigurationFacade;
 import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
 import com.linkedpipes.etl.rdf4j.Statements;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
+import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
+import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.unpacker.TemplateSource;

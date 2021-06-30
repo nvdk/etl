@@ -4,7 +4,7 @@ import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.migration.MigrateV1ToV2;
 import com.linkedpipes.etl.storage.pipeline.Pipeline;
-import com.linkedpipes.etl.storage.template.ReferenceTemplate;
+import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
 import com.linkedpipes.etl.storage.template.mapping.Mapping;

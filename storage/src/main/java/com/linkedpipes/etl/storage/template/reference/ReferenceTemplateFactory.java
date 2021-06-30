@@ -1,9 +1,10 @@
-package com.linkedpipes.etl.storage.template;
+package com.linkedpipes.etl.storage.template.reference;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.rdf.utils.vocabulary.DCTERMS;
 import com.linkedpipes.etl.rdf.utils.vocabulary.SKOS;
 import com.linkedpipes.etl.storage.BaseException;
+import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
@@ -21,7 +22,7 @@ import java.util.List;
 /**
  * Create new component from user provided input.
  */
-class ReferenceFactory {
+public class ReferenceTemplateFactory {
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -41,7 +42,7 @@ class ReferenceFactory {
 
     private IRI configIri;
 
-    public ReferenceFactory(TemplateStore store) {
+    public ReferenceTemplateFactory(TemplateStore store) {
         this.store = store;
     }
 
@@ -64,8 +65,7 @@ class ReferenceFactory {
         store.setReferenceDefinition(id, definitionRdf);
         store.setReferenceConfiguration(id, configRdf);
         //
-        TemplateLoader loader = new TemplateLoader(store);
-        return loader.loadReferenceTemplate(id);
+        return loadReferenceTemplate(id);
     }
 
     public static String createConfigurationIri(String templateIri) {
@@ -162,6 +162,15 @@ class ReferenceFactory {
             return Collections.emptyList();
         }
         return RdfUtils.updateToIriAndGraph(input, configIri);
+    }
+
+    public ReferenceTemplate loadReferenceTemplate(String id)
+            throws BaseException {
+        Collection<Statement> definition = store.getReferenceDefinition(id);
+        ReferenceTemplate template = new ReferenceTemplate();
+        template.setId(id);
+        PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);
+        return template;
     }
 
 }

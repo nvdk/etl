@@ -6,7 +6,7 @@ import com.linkedpipes.etl.storage.pipeline.Pipeline;
 import com.linkedpipes.etl.storage.pipeline.PipelineFacade;
 import com.linkedpipes.etl.storage.pipeline.info.InfoFacade;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
-import com.linkedpipes.etl.storage.template.ReferenceTemplate;
+import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
 import com.linkedpipes.etl.storage.template.store.StoreException;

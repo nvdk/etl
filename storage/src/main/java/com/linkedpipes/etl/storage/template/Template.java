@@ -1,5 +1,8 @@
 package com.linkedpipes.etl.storage.template;
 
+/**
+ * Common abstract claas for templates.
+ */
 public abstract class Template {
 
     protected String id;

@@ -1,4 +1,4 @@
-package com.linkedpipes.etl.storage.template;
+package com.linkedpipes.etl.storage.template.plugin;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.storage.BaseException;
@@ -35,10 +35,10 @@ import java.util.jar.JarFile;
  * Copy template definition from a JAR file to a repository. This class
  * is not thread save.
  */
-final class ImportFromJarFile {
+public  class PluginTemplateFactory {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(ImportFromJarFile.class);
+            LoggerFactory.getLogger(PluginTemplateFactory.class);
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -48,11 +48,11 @@ final class ImportFromJarFile {
 
     private Map<String, JarEntry> entries;
 
-    public ImportFromJarFile(TemplateStore store) {
+    public PluginTemplateFactory(TemplateStore store) {
         this.store = store;
     }
 
-    public void importJarComponent(JarComponent component) {
+    public void create(JarComponent component) {
         try {
             this.jarFile = new JarFile(component.getFile());
             loadJarEntries(component.getFile());
