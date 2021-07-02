@@ -156,6 +156,7 @@ public class PluginLoader {
         // Return result.
         return new PluginJarFile(
                 file,
+                jarFile,
                 jar.stringValue(),
                 plugin.stringValue(),
                 definition,

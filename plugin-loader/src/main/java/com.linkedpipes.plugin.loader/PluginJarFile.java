@@ -7,14 +7,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class PluginJarFile {
 
     private final File file;
 
-    private final String jar;
+    private final JarFile jarFile;
 
-    private final String iri;
+    private final String jarIri;
+
+    private final String pluginIri;
 
     private final List<Statement> definition;
 
@@ -26,15 +29,17 @@ public class PluginJarFile {
 
     public PluginJarFile(
             File file,
-            String jar,
-            String iri,
+            JarFile jarFile,
+            String jarIri,
+            String pluginIri,
             List<Statement> definition,
             List<Statement> configuration,
             List<Statement> configurationDescription,
             Map<String, JarEntry> dialogEntries) {
         this.file = file;
-        this.jar = jar;
-        this.iri = iri;
+        this.jarFile = jarFile;
+        this.jarIri = jarIri;
+        this.pluginIri = pluginIri;
         this.definition = definition;
         this.configuration = configuration;
         this.configurationDescription = configurationDescription;
@@ -45,12 +50,16 @@ public class PluginJarFile {
         return file;
     }
 
-    public String getJar() {
-        return jar;
+    public JarFile getJarFile() {
+        return jarFile;
     }
 
-    public String getIri() {
-        return iri;
+    public String getJarIri() {
+        return jarIri;
+    }
+
+    public String getPluginIri() {
+        return pluginIri;
     }
 
     public List<Statement> getDefinition() {

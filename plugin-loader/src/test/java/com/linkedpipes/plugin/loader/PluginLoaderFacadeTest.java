@@ -20,10 +20,10 @@ public class PluginLoaderFacadeTest {
         Assertions.assertEquals(
                 "http://etl.linkedpipes.com/resources/components/"
                         + "e-textHolder/0.0.0",
-                plugin.getIri());
+                plugin.getPluginIri());
         Assertions.assertEquals(
                 "http://etl.linkedpipes.com/resources/jars/e-textHolder/0.0.0",
-                plugin.getJar());
+                plugin.getJarIri());
         Assertions.assertEquals(
                 26, plugin.getDefinition().size());
         Assertions.assertEquals(
