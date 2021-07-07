@@ -10,6 +10,7 @@ import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.unpacker.TemplateSource;
+import com.linkedpipes.plugin.loader.PluginJarFile;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -99,7 +100,6 @@ public class TemplateFacade implements TemplateSource {
         } else if (template instanceof ReferenceTemplate) {
             ReferenceTemplate referenceTemplate = (ReferenceTemplate) template;
             return referenceTemplate.getCoreTemplate();
-
         } else {
             throw new RuntimeException("Unknown component type.");
         }
@@ -192,7 +192,8 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getInterfaces() throws BaseException {
         List<Statement> output = new ArrayList<>();
-        for (Template template : manager.getTemplates().values()) {
+        Collection<Template> templates = manager.getTemplates().values();
+        for (Template template : templates) {
             output.addAll(getInterface(template));
         }
         return output;
@@ -205,7 +206,7 @@ public class TemplateFacade implements TemplateSource {
     public Collection<Statement> getConfigEffective(Template template)
             throws BaseException, InvalidConfiguration {
         if (template.isPlugin()
-                && ((PluginTemplate)template).isSupportingControl()) {
+                && ((PluginTemplate)template).isSupportControl()) {
             // For template without inheritance control, the current
             // configuration is the effective one.
             return getConfig(template);
@@ -323,6 +324,10 @@ public class TemplateFacade implements TemplateSource {
         } else {
             throw new BaseException("Unknown template: {}", template.getId());
         }
+    }
+
+    public PluginJarFile getPluginJar(String iri) {
+        return manager.getPluginJar(iri);
     }
 
     @Override

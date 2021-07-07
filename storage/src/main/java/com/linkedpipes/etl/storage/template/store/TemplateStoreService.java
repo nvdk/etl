@@ -92,11 +92,11 @@ public class TemplateStoreService {
 
     /**
      * Return true if data from old repository should be migrated into
-     * a nre repository.
+     * a new repository.
      */
     public boolean shouldMigrate() {
-        return info.templateVersion != LATEST_VERSION &&
-                info.repository != null;
+        return info.templateVersion != LATEST_VERSION ||
+                info.repository == null;
     }
 
     public StoreInfo getStoreInfo() {

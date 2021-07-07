@@ -7,7 +7,7 @@ import java.io.File;
 import java.util.Collection;
 
 @Service
-public class JarFacade {
+class JarFacade {
 
     @Autowired
     private JarManager manager;

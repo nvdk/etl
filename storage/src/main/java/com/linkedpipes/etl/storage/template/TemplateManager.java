@@ -2,19 +2,18 @@ package com.linkedpipes.etl.storage.template;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.Configuration;
-import com.linkedpipes.etl.storage.jar.JarComponent;
-import com.linkedpipes.etl.storage.jar.JarFacade;
 import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
 import com.linkedpipes.etl.storage.template.migration.MigrateStore;
+import com.linkedpipes.etl.storage.template.plugin.PluginService;
 import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
-import com.linkedpipes.etl.storage.template.plugin.PluginTemplateFactory;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplateFactory;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import com.linkedpipes.etl.storage.template.store.TemplateStoreService;
+import com.linkedpipes.plugin.loader.PluginJarFile;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -43,8 +42,6 @@ public class TemplateManager {
     private static final Logger LOG =
             LoggerFactory.getLogger(TemplateManager.class);
 
-    private final JarFacade jarFacade;
-
     private final Configuration configuration;
 
     private final Map<String, Template> templates = new HashMap<>();
@@ -53,11 +50,10 @@ public class TemplateManager {
 
     private TemplateStore store;
 
+    private PluginService pluginService;
+
     @Autowired
-    public TemplateManager(
-            JarFacade jarFacade,
-            Configuration configuration) {
-        this.jarFacade = jarFacade;
+    public TemplateManager(Configuration configuration) {
         this.configuration = configuration;
         this.storeService = new TemplateStoreService(
                 configuration.getTemplatesDirectory());
@@ -72,22 +68,22 @@ public class TemplateManager {
         try {
             storeService.initialize();
             store = storeService.createStore();
-            importJarFiles();
+            importPlugin();
             if (storeService.shouldMigrate()) {
                 migrate();
             }
-            importTemplates();
+            importReferences();
         } catch (Exception ex) {
             LOG.error("Initialization failed.", ex);
             throw ex;
         }
     }
 
-    private void importJarFiles() {
-        PluginTemplateFactory copyJarTemplates =
-                new PluginTemplateFactory(store);
-        for (JarComponent item : jarFacade.getJarComponents()) {
-            copyJarTemplates.create(item);
+    private void importPlugin() throws TemplateException, StoreException {
+        pluginService = new PluginService(store);
+        pluginService.initialize(configuration.getJarDirectory());
+        for (PluginTemplate plugin : pluginService.getPluginTemplates()) {
+            templates.put(plugin.getIri(), plugin);
         }
     }
 
@@ -99,19 +95,7 @@ public class TemplateManager {
         storeService.setStoreInfo(newStoreInfo);
     }
 
-    private void importTemplates() throws StoreException {
-        for (String id : store.getPluginIdentifiers()) {
-            try {
-                PluginTemplate template = loadPluginTemplate(id);
-                if (template.getIri() == null) {
-                    LOG.error("Invalid template ignored: {}", id);
-                    continue;
-                }
-                templates.put(template.getIri(), template);
-            } catch (Exception ex) {
-                LOG.error("Can't load template: {}", id, ex);
-            }
-        }
+    private void importReferences() throws StoreException {
         List<ReferenceTemplate> referenceTemplates = new ArrayList<>();
         for (String id : store.getReferenceIdentifiers()) {
             try {
@@ -135,15 +119,6 @@ public class TemplateManager {
         ReferenceTemplate template = new ReferenceTemplate();
         template.setId(id);
         PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);
-        return template;
-    }
-
-    private PluginTemplate loadPluginTemplate(String id)
-            throws BaseException {
-        Collection<Statement> definition = store.getPluginDefinition(id);
-        PluginTemplate template = new PluginTemplate();
-        template.setId(id);
-        PojoLoader.loadOfType(definition, PluginTemplate.TYPE, template);
         return template;
     }
 
@@ -251,6 +226,10 @@ public class TemplateManager {
             throws BaseException {
         templates.remove(template.getIri());
         store.removeReference(template.getId());
+    }
+
+    public PluginJarFile getPluginJar(String iri) {
+        return pluginService.getPlugin(iri);
     }
 
 }

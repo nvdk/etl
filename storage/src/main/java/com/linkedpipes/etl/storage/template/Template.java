@@ -9,6 +9,11 @@ public abstract class Template {
 
     protected String iri;
 
+    public Template(String id, String iri) {
+        this.id = id;
+        this.iri = iri;
+    }
+
     public String getId() {
         return id;
     }

@@ -30,6 +30,11 @@ public class ReferenceTemplate extends Template
 
     private PluginTemplate coreTemplate;
 
+    public ReferenceTemplate() {
+        super(null, null);
+        // Values are loaded via PojoLoader.Loadable interface.
+    }
+
     public String getTemplate() {
         return template;
     }

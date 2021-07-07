@@ -67,7 +67,7 @@ public class PluginLoader {
     private static final Logger LOG =
             LoggerFactory.getLogger(PluginLoader.class);
 
-    public List<PluginJarFile> loadReferences(File file)
+    public List<PluginJarFile> loadPlugin(File file)
             throws PluginLoaderException {
         JarFile jarFile = loadJarFile(file);
         Map<String, JarEntry> entries = loadJarEntries(jarFile);

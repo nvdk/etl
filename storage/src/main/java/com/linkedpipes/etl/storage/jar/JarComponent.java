@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 import java.io.File;
 
-public class JarComponent implements PojoLoader.Loadable {
+class JarComponent implements PojoLoader.Loadable {
 
     public static final IRI TYPE;
 

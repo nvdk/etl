@@ -208,4 +208,34 @@ public final class LP_PIPELINE {
     public static final String HAS_COLOR =
             "http://linkedpipes.com/ontology/color";
 
+    public static final String JAR_TEMPLATE  =
+            "http://linkedpipes.com/ontology/JarTemplate";
+
+    public static final String HAS_COMPONENT_TYPE  =
+            "http://linkedpipes.com/ontology/componentType";
+
+    public static final String HAS_KEYWORD  =
+            "http://linkedpipes.com/ontology/keyword";
+
+    public static final String HAS_INFO_LINK  =
+            "http://linkedpipes.com/ontology/infoLink";
+
+    public static final String HAS_PORT  =
+            "http://linkedpipes.com/ontology/port";
+
+    public static final String HAS_DIALOG  =
+            "http://linkedpipes.com/ontology/dialog";
+
+    public static final String DIALOG  =
+            "http://linkedpipes.com/ontology/Dialog";
+
+    public static final String HAS_NAME  =
+            "http://linkedpipes.com/ontology/name";
+
+    public static final String CONFIGURATION_DESCRIPTION  =
+            "http://plugins.linkedpipes.com/ontology/ConfigurationDescription";
+
+    public static final String HAS_CONFIG_TYPE =
+            "http://plugins.linkedpipes.com/ontology/configuration/type";
+
 }

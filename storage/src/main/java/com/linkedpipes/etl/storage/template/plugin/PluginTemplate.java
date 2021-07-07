@@ -1,53 +1,14 @@
 package com.linkedpipes.etl.storage.template.plugin;
 
-import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
-import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.template.Template;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class PluginTemplate extends Template implements PojoLoader.Loadable {
+public class PluginTemplate extends Template {
 
-    public static final IRI TYPE;
+    private final boolean supportControl;
 
-    static {
-        ValueFactory valueFactory = SimpleValueFactory.getInstance();
-        TYPE = valueFactory.createIRI(LP_PIPELINE.JAS_TEMPLATE);
-    }
-
-    private boolean supportControl;
-
-    private String configurationDescription;
-
-    @Override
-    public void loadIri(String iri) {
-        this.iri = iri;
-    }
-
-    @Override
-    public PojoLoader.Loadable load(String predicate, Value value) {
-        switch (predicate) {
-            case LP_PIPELINE.HAS_SUPPORT_CONTROL:
-                supportControl = ((Literal) value).booleanValue();
-                break;
-            case LP_PIPELINE.HAS_CONFIGURATION_ENTITY_DESCRIPTION:
-                configurationDescription = value.stringValue();
-                break;
-            default:
-                break;
-        }
-        return null;
-    }
-
-    public boolean isSupportingControl() {
-        return supportControl;
-    }
-
-    public String getConfigurationDescription() {
-        return configurationDescription;
+    public PluginTemplate(String id, String iri, boolean supportControl) {
+        super(id, iri);
+        this.supportControl = supportControl;
     }
 
     @Override
@@ -58,6 +19,10 @@ public class PluginTemplate extends Template implements PojoLoader.Loadable {
     @Override
     public boolean isReference() {
         return false;
+    }
+
+    public boolean isSupportControl() {
+        return supportControl;
     }
 
 }

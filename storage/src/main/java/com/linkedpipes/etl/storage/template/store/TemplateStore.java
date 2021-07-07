@@ -13,8 +13,6 @@ public interface TemplateStore {
 
     String getName();
 
-    List<String> getPluginIdentifiers() throws StoreException;
-
     List<String> getReferenceIdentifiers() throws StoreException;
 
     String reserveIdentifier() throws StoreException;
@@ -22,8 +20,11 @@ public interface TemplateStore {
     List<Statement> getPluginInterface(String id)
             throws StoreException;
 
-    void setPluginInterface(
-            String id, Collection<Statement> statements)
+    void setPlugin(
+            String id,
+            Collection<Statement> definition,
+            Collection<Statement> configuration,
+            Collection<Statement> configurationDescription)
             throws StoreException;
 
     List<Statement> getReferenceInterface(String id)
@@ -36,10 +37,6 @@ public interface TemplateStore {
     List<Statement> getPluginDefinition(String id)
             throws StoreException;
 
-    void setPluginDefinition(
-            String id, Collection<Statement> statements)
-            throws StoreException;
-
     Collection<Statement> getReferenceDefinition(String id)
             throws StoreException;
 
@@ -50,10 +47,6 @@ public interface TemplateStore {
     List<Statement> getPluginConfiguration(String id)
             throws StoreException;
 
-    void setPluginConfiguration(
-            String id, Collection<Statement> statements)
-            throws StoreException;
-
     List<Statement> getReferenceConfiguration(String id)
             throws StoreException;
 
@@ -62,10 +55,6 @@ public interface TemplateStore {
             throws StoreException;
 
     List<Statement> getPluginConfigurationDescription(String id)
-            throws StoreException;
-
-    void setPluginConfigurationDescription(
-            String id, Collection<Statement> statements)
             throws StoreException;
 
     byte[] getPluginFile(

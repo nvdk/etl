@@ -13,10 +13,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -39,7 +42,9 @@ public class LegacyStore implements TemplateStore {
     private static final String CONFIGURATION_DESCRIPTION =
             "configuration-description";
 
-    protected final File directory;
+    private final File directory;
+
+    private final Base64.Encoder encoder = Base64.getEncoder();
 
     public LegacyStore(File directory) {
         this.directory = directory;
@@ -48,15 +53,6 @@ public class LegacyStore implements TemplateStore {
     @Override
     public String getName() {
         return STORE_NAME;
-    }
-
-    @Override
-    public List<String> getPluginIdentifiers() {
-        return listDirectories().stream()
-                .filter(File::isDirectory)
-                .map(File::getName)
-                .filter(name -> name.startsWith("jar-"))
-                .collect(Collectors.toList());
     }
 
     protected List<File> listDirectories() {
@@ -113,16 +109,28 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public void setPluginInterface(
-            String id, Collection<Statement> statements) throws StoreException {
-        saveStatements(id, INTERFACE, statements);
+    public void setPlugin(
+            String id,
+            Collection<Statement> definition,
+            Collection<Statement> configuration,
+            Collection<Statement> configurationDescription)
+            throws StoreException {
+        saveStatements(
+                id, INTERFACE, definition);
+        saveStatements(
+                id, DEFINITION, definition);
+        saveStatements(
+                id, CONFIGURATION, configuration);
+        saveStatements(
+                id, CONFIGURATION_DESCRIPTION, configurationDescription);
     }
 
     protected void saveStatements(
             String id, String fileName, Collection<Statement> statements)
             throws StoreException {
-        File file = new File(id, fileName + ".trig");
-        file.getParentFile().mkdirs();
+        File directory = getDirectory(id);
+        directory.mkdirs();
+        File file = new File(directory, fileName + ".trig");
         try (OutputStream stream = new FileOutputStream(file)) {
             Rio.write(statements, stream, RDFFormat.TRIG);
         } catch (IOException | RuntimeException ex) {
@@ -138,7 +146,8 @@ public class LegacyStore implements TemplateStore {
 
     @Override
     public void setReferenceInterface(
-            String id, Collection<Statement> statements) throws StoreException {
+            String id, Collection<Statement> statements)
+            throws StoreException {
         saveStatements(id, INTERFACE, statements);
     }
 
@@ -149,12 +158,6 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public void setPluginDefinition(
-            String id, Collection<Statement> statements) throws StoreException {
-        saveStatements(id, DEFINITION, statements);
-    }
-
-    @Override
     public Collection<Statement> getReferenceDefinition(String id)
             throws StoreException {
         return readStatements(id, DEFINITION);
@@ -162,7 +165,8 @@ public class LegacyStore implements TemplateStore {
 
     @Override
     public void setReferenceDefinition(
-            String id, Collection<Statement> statements) throws StoreException {
+            String id, Collection<Statement> statements)
+            throws StoreException {
         saveStatements(id, DEFINITION, statements);
     }
 
@@ -173,13 +177,6 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public void setPluginConfiguration(
-            String id, Collection<Statement> statements)
-            throws StoreException {
-        saveStatements(id, CONFIGURATION, statements);
-    }
-
-    @Override
     public List<Statement> getReferenceConfiguration(
             String id) throws StoreException {
         return readStatements(id, CONFIGURATION);
@@ -187,7 +184,8 @@ public class LegacyStore implements TemplateStore {
 
     @Override
     public void setReferenceConfiguration(
-            String id, Collection<Statement> statements) throws StoreException {
+            String id, Collection<Statement> statements)
+            throws StoreException {
         saveStatements(id, CONFIGURATION, statements);
     }
 
@@ -195,12 +193,6 @@ public class LegacyStore implements TemplateStore {
     public List<Statement> getPluginConfigurationDescription(String id)
             throws StoreException {
         return readStatements(id, CONFIGURATION_DESCRIPTION);
-    }
-
-    @Override
-    public void setPluginConfigurationDescription(
-            String id, Collection<Statement> statements) throws StoreException {
-        saveStatements(id, CONFIGURATION_DESCRIPTION, statements);
     }
 
     @Override

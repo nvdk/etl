@@ -13,7 +13,7 @@ public class PluginLoaderFacadeTest {
     public void loadTextHolder() throws Exception {
         File file = TestUtils.fileFromResource("e-textHolder-0.0.0.jar");
         PluginLoader loader = new PluginLoader();
-        List<PluginJarFile> actual = loader.loadReferences(file);
+        List<PluginJarFile> actual = loader.loadPlugin(file);
         //
         Assertions.assertEquals(1, actual.size());
         PluginJarFile plugin = actual.get(0);
