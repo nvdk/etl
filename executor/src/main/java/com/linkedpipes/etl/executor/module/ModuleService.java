@@ -347,7 +347,7 @@ public class ModuleService implements ApplicationListener<ApplicationEvent> {
             }
             List<PluginJarFile> plugins;
             try {
-                plugins = loader.loadReferences(file);
+                plugins = loader.loadPlugin(file);
             } catch (PluginLoaderException ex) {
                 LOG.error("Can't load component.", ex);
                 return;
@@ -362,10 +362,10 @@ public class ModuleService implements ApplicationListener<ApplicationEvent> {
             for (PluginJarFile plugin : plugins) {
                 LOG.info(
                         "Loaded component '{}' from '{}'",
-                        plugin.getIri(), plugin.getJar());
+                        plugin.getPluginIri(), plugin.getJarIri());
                 // As of now we store under JAR iri as a single
                 // JAr file can contain only one component.
-                components.put(plugin.getJar(), bundle);
+                components.put(plugin.getJarIri(), bundle);
             }
         });
         // Start bundles.
