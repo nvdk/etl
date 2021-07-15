@@ -65,7 +65,7 @@ public class ReferenceTemplateFactory {
         store.setReferenceDefinition(id, definitionRdf);
         store.setReferenceConfiguration(id, configRdf);
         //
-        return loadReferenceTemplate(id);
+        return loadReferenceTemplate(definitionRdf, id);
     }
 
     public static String createConfigurationIri(String templateIri) {
@@ -164,9 +164,8 @@ public class ReferenceTemplateFactory {
         return RdfUtils.updateToIriAndGraph(input, configIri);
     }
 
-    public ReferenceTemplate loadReferenceTemplate(String id)
-            throws BaseException {
-        Collection<Statement> definition = store.getReferenceDefinition(id);
+    private ReferenceTemplate loadReferenceTemplate(
+            Collection<Statement> definition, String id) throws BaseException {
         ReferenceTemplate template = new ReferenceTemplate();
         template.setId(id);
         PojoLoader.loadOfType(definition, ReferenceTemplate.TYPE, template);
