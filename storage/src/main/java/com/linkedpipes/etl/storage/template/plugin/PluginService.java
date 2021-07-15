@@ -68,9 +68,9 @@ public class PluginService {
 
     protected void createPlugin(PluginJarFile reference)
             throws StoreException, TemplateException {
-        PluginTemplateLoader loader = new PluginTemplateLoader();
+        PluginTemplateFactory loader = new PluginTemplateFactory();
         try {
-            loader.load(reference);
+            loader.create(reference);
         } catch (TemplateException ex) {
             LOG.info("Can't load plugin template: '{}' from '{}'",
                     reference.getPluginIri(), reference.getFile());

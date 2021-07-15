@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class PluginTemplateLoaderTest {
+public class PluginTemplateFactoryTest {
 
-    public static class PluginTemplateLoaderMock extends PluginTemplateLoader {
+    public static class PluginTemplateLoaderMock extends PluginTemplateFactory {
 
         @Override
         protected byte[] readJarEntry(JarFile jar, JarEntry entry) {
@@ -56,8 +56,8 @@ public class PluginTemplateLoaderTest {
                 new ArrayList<>(description),
                 dialogs);
 
-        PluginTemplateLoader loader = new PluginTemplateLoaderMock();
-        loader.load(pluginJarFile);
+        PluginTemplateFactory loader = new PluginTemplateLoaderMock();
+        loader.create(pluginJarFile);
 
         var definitionActual = loader.getDefinition();
         Assertions.assertEquals(

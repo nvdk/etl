@@ -7,6 +7,9 @@ import org.eclipse.rdf4j.model.Value;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Full definition of a plugin template data structure.
+ */
 public class PluginDefinition {
 
     static class Port {

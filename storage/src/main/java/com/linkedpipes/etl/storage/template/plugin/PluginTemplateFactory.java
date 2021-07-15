@@ -17,14 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-class PluginTemplateLoader {
+class PluginTemplateFactory {
 
     private static final IRI CONFIGURATION_DESCRIPTION;
 
@@ -39,7 +38,7 @@ class PluginTemplateLoader {
     }
 
     protected static final Logger LOG =
-            LoggerFactory.getLogger(PluginTemplateLoader.class);
+            LoggerFactory.getLogger(PluginTemplateFactory.class);
 
     protected final ValueFactory valueFactory =
             SimpleValueFactory.getInstance();
@@ -58,7 +57,7 @@ class PluginTemplateLoader {
 
     protected Map<String, byte[]> files;
 
-    public void load(PluginJarFile plugin) throws TemplateException {
+    public void create(PluginJarFile plugin) throws TemplateException {
         Resource description = findDescription(
                 plugin.getConfigurationDescription());
 
