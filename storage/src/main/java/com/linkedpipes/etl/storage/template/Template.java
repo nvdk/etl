@@ -30,7 +30,7 @@ public abstract class Template {
         this.iri = iri;
     }
 
-    public abstract boolean isPlugin();
+    public abstract boolean getCorePlugin();
 
     public abstract boolean isReference();
 

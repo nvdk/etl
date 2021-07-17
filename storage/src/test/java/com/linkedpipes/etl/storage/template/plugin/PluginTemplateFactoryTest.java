@@ -15,7 +15,7 @@ import java.util.jar.JarFile;
 
 public class PluginTemplateFactoryTest {
 
-    public static class PluginTemplateLoaderMock extends PluginTemplateFactory {
+    public static class PluginTemplateLoaderMock extends PluginContainerFactory {
 
         @Override
         protected byte[] readJarEntry(JarFile jar, JarEntry entry) {
@@ -56,31 +56,30 @@ public class PluginTemplateFactoryTest {
                 new ArrayList<>(description),
                 dialogs);
 
-        PluginTemplateFactory loader = new PluginTemplateLoaderMock();
-        loader.create(pluginJarFile);
-
-        var definitionActual = loader.getDefinition();
+        PluginContainerFactory loader = new PluginTemplateLoaderMock();
+        var container = loader.create(pluginJarFile);
+        var plugin = container.definition;
         Assertions.assertEquals(
-                iri, definitionActual.resource.stringValue());
+                iri, container.resource.stringValue());
         Assertions.assertEquals(
-                "Text holder", definitionActual.prefLabel.stringValue());
+                "Text holder", plugin.prefLabel.stringValue());
         Assertions.assertEquals(
-                dialogs.size(), definitionActual.dialogs.size());
+                dialogs.size(), plugin.dialogs.size());
 
         var expected = Statements.wrap(
                 TestUtils.rdfFromResource(directory + "expected.trig"));
         TestUtils.assertIsomorphic(
                 expected.selectByGraph(iri),
-                loader.getDefinitionStatements());
+                container.definitionStatements);
         TestUtils.assertIsomorphic(
                 expected.selectByGraph(iri + "/configuration"),
-                loader.getConfigurationStatements());
+                container.configurationStatements);
         TestUtils.assertIsomorphic(
                 expected.selectByGraph(iri + "/configuration-description"),
-                loader.getConfigurationDescriptionStatements());
+                container.configurationDescriptionStatements);
         Assertions.assertEquals(
                 dialogs.size(),
-                loader.getFiles().size());
+                container.files.size());
     }
 
 }

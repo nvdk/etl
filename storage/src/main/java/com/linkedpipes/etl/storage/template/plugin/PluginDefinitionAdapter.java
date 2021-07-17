@@ -4,6 +4,7 @@ import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.model.vocabulary.SKOS;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -45,7 +46,9 @@ class PluginDefinitionAdapter {
                     }
                     break;
                 case LP_PIPELINE.HAS_SUPPORT_CONTROL:
-                    result.supportControl = value;
+                    if (value instanceof Literal) {
+                        result.supportControl = (Literal) value;
+                    }
                     break;
                 case LP_PIPELINE.HAS_KEYWORD:
                     result.tags.add(value);

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-class PluginTemplateFactory {
+public class PluginContainerFactory {
 
     private static final IRI CONFIGURATION_DESCRIPTION;
 
@@ -38,26 +38,13 @@ class PluginTemplateFactory {
     }
 
     protected static final Logger LOG =
-            LoggerFactory.getLogger(PluginTemplateFactory.class);
+            LoggerFactory.getLogger(PluginContainerFactory.class);
 
     protected final ValueFactory valueFactory =
             SimpleValueFactory.getInstance();
 
-    protected String iri;
-
-    protected String identifier;
-
-    protected PluginDefinition definition;
-
-    protected Collection<Statement> definitionStatements;
-
-    protected Collection<Statement> configurationStatements;
-
-    protected Collection<Statement> configurationDescriptionStatements;
-
-    protected Map<String, byte[]> files;
-
-    public void create(PluginJarFile plugin) throws TemplateException {
+    public PluginContainer create(PluginJarFile plugin)
+            throws TemplateException {
         Resource description = findDescription(
                 plugin.getConfigurationDescription());
 
@@ -68,21 +55,24 @@ class PluginTemplateFactory {
 
         Resource targetConfiguration = getConfigurationResource(plugin);
         Resource targetDescription = getDescriptionResource(plugin);
-
-        iri = plugin.getPluginIri();
-        // We allow only one plugin per jar-file.
-        identifier = "jar-" + plugin.getFile().getName();
-        definition = createDefinition(
+        PluginDefinition definition = createDefinition(
                 plugin, targetConfiguration, targetDescription);
-        definitionStatements = PluginDefinitionAdapter.asStatements(definition)
+
+        PluginContainer result = new PluginContainer();
+        // We allow only one plugin per jar-file.
+        result.identifier = "jar-" + plugin.getFile().getName();
+        result.resource = valueFactory.createIRI(plugin.getPluginIri());
+        result.definitionStatements = PluginDefinitionAdapter.asStatements(definition)
                 .withGraph(definition.resource);
-        configurationStatements = updateStatements(
+        result.configurationStatements = updateStatements(
                 plugin.getConfiguration(),
                 configuration, targetConfiguration);
-        configurationDescriptionStatements = updateStatements(
+        result.configurationDescriptionStatements = updateStatements(
                 plugin.getConfigurationDescription(),
                 description, targetDescription);
-        files = loadFiles(plugin);
+        result.files = loadFiles(plugin);
+        result.definition = definition;
+        return result;
     }
 
     protected Resource findDescription(Collection<Statement> description)
@@ -190,34 +180,6 @@ class PluginTemplateFactory {
         try (InputStream stream = jar.getInputStream(entry)) {
             return stream.readAllBytes();
         }
-    }
-
-    public String getIri() {
-        return iri;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public PluginDefinition getDefinition() {
-        return definition;
-    }
-
-    public Collection<Statement> getDefinitionStatements() {
-        return definitionStatements;
-    }
-
-    public Collection<Statement> getConfigurationStatements() {
-        return configurationStatements;
-    }
-
-    public Collection<Statement> getConfigurationDescriptionStatements() {
-        return configurationDescriptionStatements;
-    }
-
-    public Map<String, byte[]> getFiles() {
-        return files;
     }
 
 }

@@ -85,10 +85,12 @@ class TemplateV1 {
             return template;
         }
         Collection<Statement> configuration = updateConfiguration(
-                template.configuration, root);
+                template.configurationStatements, root);
         return new ReferenceContainer(
-                template.resource, template.definition,
-                Statements.wrap(configuration));
+                template.resource,
+                template.definitionStatements,
+                Statements.wrap(configuration),
+                null);
     }
 
     protected boolean shouldUpdate(String iri) {

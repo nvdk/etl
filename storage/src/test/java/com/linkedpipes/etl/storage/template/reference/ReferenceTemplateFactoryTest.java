@@ -1,7 +1,6 @@
 package com.linkedpipes.etl.storage.template.reference;
 
 import com.linkedpipes.etl.storage.TestUtils;
-import com.linkedpipes.etl.storage.template.store.StatementsStore;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.junit.jupiter.api.Test;
 
@@ -16,18 +15,22 @@ public class ReferenceTemplateFactoryTest {
         var definition = TestUtils.rdfFromResource(
                 directory + "definition.trig");
 
-        var store = new StatementsStore();
-        var factory = new ReferenceTemplateFactory(store);
+        var factory = new ReferenceContainerFactory();
 
-        factory.create(definition, configuration,
-                "202004231840", "http://etl.linkedpipes.com/202004231840");
+        var container = factory.create(
+                "202004231840", "http://etl.linkedpipes.com/202004231840",
+                definition, configuration);
 
         var expected = Statements.wrap(
                 TestUtils.rdfFromResource(
                         directory + "expected.trig"));
 
-        TestUtils.assertIsomorphic(expected, store.getStatements());
+        Statements actual = Statements.arrayList();
+        actual.addAll(container.definitionStatements);
+        actual.addAll(container.configurationStatements);
+        TestUtils.assertIsomorphic(expected, actual);
 
     }
 
 }
+

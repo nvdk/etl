@@ -223,14 +223,6 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public void removePlugin(String id) throws StoreException {
-        File dir = getDirectory(id);
-        if (!FileUtils.deleteQuietly(dir)) {
-            throw new StoreException("Can't delete directory with template");
-        }
-    }
-
-    @Override
     public void removeReference(String id) throws StoreException {
         File dir = getDirectory(id);
         if (!FileUtils.deleteQuietly(dir)) {

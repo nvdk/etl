@@ -238,4 +238,16 @@ public final class LP_PIPELINE {
     public static final String HAS_CONFIG_TYPE =
             "http://plugins.linkedpipes.com/ontology/configuration/type";
 
+    public static final String HAS_DESCRIPTION  =
+            "http://purl.org/dc/terms/description";
+
+    public static final String HAS_NOTE  =
+            "http://www.w3.org/2004/02/skos/core#note";
+
+    public static final String HAS_KNOWN_AS  =
+            "http://www.w3.org/2002/07/owl#sameAs";
+
+    public static final String HAS_ROOT  =
+            "http://linkedpipes.com/ontology/root";
+
 }

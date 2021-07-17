@@ -64,8 +64,6 @@ public interface TemplateStore {
     void setPluginFile(String id, String path, byte[] content)
             throws StoreException;
 
-    void removePlugin(String id) throws StoreException;
-
     void removeReference(String id) throws StoreException;
 
 }

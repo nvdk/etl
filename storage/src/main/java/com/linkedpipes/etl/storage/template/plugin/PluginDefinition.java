@@ -1,6 +1,7 @@
 package com.linkedpipes.etl.storage.template.plugin;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 
@@ -33,7 +34,7 @@ public class PluginDefinition {
 
     public IRI type;
 
-    public Value supportControl;
+    public Literal supportControl;
 
     public List<Value> tags = new ArrayList<>(4);
 

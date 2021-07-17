@@ -19,10 +19,10 @@ class TemplateV3 {
         return new ReferenceContainer(
                 template.resource,
                 addConfigurationIri(
-                        template.definition,
+                        template.definitionStatements,
                         template.resource.stringValue()),
-                template.configuration
-        );
+                template.configurationStatements,
+                null);
     }
 
     protected Statements addConfigurationIri(

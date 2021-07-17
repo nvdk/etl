@@ -105,11 +105,6 @@ public class StatementsStore implements TemplateStore {
     }
 
     @Override
-    public void removePlugin(String id) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void removeReference(String id) {
         throw new UnsupportedOperationException();
     }

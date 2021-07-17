@@ -1,7 +1,6 @@
 package com.linkedpipes.etl.storage.web.servlet;
 
 import com.linkedpipes.etl.storage.template.TemplateFacade;
-import com.linkedpipes.etl.storage.template.plugin.PluginService;
 import com.linkedpipes.plugin.loader.PluginJarFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;

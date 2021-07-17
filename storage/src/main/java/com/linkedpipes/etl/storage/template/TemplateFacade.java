@@ -39,7 +39,7 @@ public class TemplateFacade implements TemplateSource {
     private static final Logger LOG
             = LoggerFactory.getLogger(TemplateFacade.class);
 
-    private final TemplateManager manager;
+    private final TemplateService manager;
 
     private final MappingFacade mapping;
 
@@ -49,7 +49,7 @@ public class TemplateFacade implements TemplateSource {
 
     @Autowired
     public TemplateFacade(
-            TemplateManager manager,
+            TemplateService manager,
             MappingFacade mapping) {
         this.manager = manager;
         this.mapping = mapping;
@@ -99,7 +99,7 @@ public class TemplateFacade implements TemplateSource {
             return template;
         } else if (template instanceof ReferenceTemplate) {
             ReferenceTemplate referenceTemplate = (ReferenceTemplate) template;
-            return referenceTemplate.getCoreTemplate();
+            return getTemplate(referenceTemplate.getTemplate());
         } else {
             throw new RuntimeException("Unknown component type.");
         }
@@ -118,7 +118,7 @@ public class TemplateFacade implements TemplateSource {
         LinkedList<Template> output = new LinkedList<>();
         while (true) {
             output.add(template);
-            if (template.isPlugin()) {
+            if (template.getCorePlugin()) {
                 break;
             } else if (template.isReference()) {
                 ReferenceTemplate reference = (ReferenceTemplate) template;
@@ -181,7 +181,7 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getInterface(Template template)
             throws BaseException {
-        if (template.isPlugin()) {
+        if (template.getCorePlugin()) {
             return store.getPluginInterface(template.getId());
         } else if (template.isReference()) {
             return store.getReferenceInterface(template.getId());
@@ -205,7 +205,7 @@ public class TemplateFacade implements TemplateSource {
      */
     public Collection<Statement> getConfigEffective(Template template)
             throws BaseException, InvalidConfiguration {
-        if (template.isPlugin()
+        if (template.getCorePlugin()
                 && ((PluginTemplate)template).isSupportControl()) {
             // For template without inheritance control, the current
             // configuration is the effective one.
@@ -230,7 +230,7 @@ public class TemplateFacade implements TemplateSource {
      */
     public Collection<Statement> getConfig(Template template)
             throws BaseException {
-        if (template.isPlugin()) {
+        if (template.getCorePlugin()) {
             return store.getPluginConfiguration(template.getId());
         } else if (template.isReference()) {
             return store.getReferenceConfiguration(template.getId());
@@ -247,7 +247,7 @@ public class TemplateFacade implements TemplateSource {
             throws BaseException, InvalidConfiguration {
         ValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI graph = valueFactory.createIRI(template.getIri() + "/new");
-        if (template.isPlugin()) {
+        if (template.getCorePlugin()) {
             return configurationFacade.createNewFromJarFile(
                     store.getPluginConfiguration(template.getId()),
                     getConfigDescription(template),
@@ -268,7 +268,7 @@ public class TemplateFacade implements TemplateSource {
     public List<Statement> getConfigDescription(Template template)
             throws BaseException {
         Template root = getRootTemplate(template);
-        if (!root.isPlugin()) {
+        if (!root.getCorePlugin()) {
             throw new BaseException(
                     "Root template '{}' is not a plugin for '{}'",
                     root.getId(), template.getId());
@@ -299,7 +299,7 @@ public class TemplateFacade implements TemplateSource {
     public void updateReferenceInterface(
             ReferenceTemplate template, Collection<Statement> diff)
             throws BaseException {
-        manager.updateReferenceTemplateInterface(template, diff);
+        manager.updateReferenceTemplate(template, diff);
     }
 
     public void updateConfig(
@@ -317,7 +317,7 @@ public class TemplateFacade implements TemplateSource {
 
     public Collection<Statement> getDefinition(Template template)
             throws BaseException {
-        if (template.isPlugin()) {
+        if (template.getCorePlugin()) {
             return store.getPluginDefinition(template.getId());
         } else if (template.isReference()) {
             return store.getReferenceDefinition(template.getId());

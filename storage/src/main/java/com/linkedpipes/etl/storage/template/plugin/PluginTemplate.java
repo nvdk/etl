@@ -6,13 +6,14 @@ public class PluginTemplate extends Template {
 
     private final boolean supportControl;
 
-    public PluginTemplate(String id, String iri, boolean supportControl) {
-        super(id, iri);
-        this.supportControl = supportControl;
+    public PluginTemplate(PluginContainer container) {
+        super(container.identifier, container.resource.stringValue());
+        PluginDefinition definition = container.definition;
+        this.supportControl = definition.supportControl.booleanValue();
     }
 
     @Override
-    public boolean isPlugin() {
+    public boolean getCorePlugin() {
         return true;
     }
 

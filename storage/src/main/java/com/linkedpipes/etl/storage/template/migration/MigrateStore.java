@@ -106,20 +106,20 @@ public class MigrateStore implements TemplatesInformation {
                 container, version);
         // Store to the new repository. The interface and
         // definition are the same for reference templates.
-        target.setReferenceInterface(id, container.definition);
-        target.setReferenceDefinition(id, container.definition);
-        target.setReferenceConfiguration(id, container.configuration);
+        target.setReferenceInterface(id, container.definitionStatements);
+        target.setReferenceDefinition(id, container.definitionStatements);
+        target.setReferenceConfiguration(id, container.configurationStatements);
     }
 
     protected ReferenceContainer loadReferenceToContainer(
             String id) throws StoreException {
         ReferenceContainer result = new ReferenceContainer();
-        result.definition = Statements.set();
-        result.definition.addAll(source.getReferenceDefinition(id));
-        result.definition.addAll(source.getReferenceInterface(id));
-        result.configuration = Statements.set();
-        result.configuration.addAll(source.getReferenceConfiguration(id));
-        result.resource = TemplateReader.readResource(result.definition);
+        result.definitionStatements = Statements.set();
+        result.definitionStatements.addAll(source.getReferenceDefinition(id));
+        result.definitionStatements.addAll(source.getReferenceInterface(id));
+        result.configurationStatements = Statements.set();
+        result.configurationStatements.addAll(source.getReferenceConfiguration(id));
+        result.resource = TemplateReader.readResource(result.definitionStatements);
         return result;
     }
 

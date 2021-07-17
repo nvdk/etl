@@ -24,8 +24,8 @@ class TemplateV2 {
         return new ReferenceContainer(
                 template.resource,
                 Statements.wrap(removeConfigDescriptionReference(
-                        template.definition)),
-                template.configuration);
+                        template.definitionStatements)),
+                template.configurationStatements, null);
     }
 
     protected List<Statement> removeConfigDescriptionReference(
