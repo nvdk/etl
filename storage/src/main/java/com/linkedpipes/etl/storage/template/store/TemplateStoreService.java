@@ -1,5 +1,6 @@
 package com.linkedpipes.etl.storage.template.store;
 
+import com.linkedpipes.etl.storage.template.store.cached.CachedStoreV1;
 import com.linkedpipes.etl.storage.template.store.file.FileStoreV1;
 import com.linkedpipes.etl.storage.template.store.legacy.LegacyStore;
 import org.slf4j.Logger;
@@ -50,6 +51,8 @@ public class TemplateStoreService {
                 return new LegacyStore(storeDirectory);
             case FileStoreV1.STORE_NAME:
                 return new FileStoreV1(storeDirectory);
+            case CachedStoreV1.STORE_NAME:
+                return new CachedStoreV1(storeDirectory);
             default:
                 throw new StoreException("Invalid store type.");
         }
@@ -106,8 +109,8 @@ public class TemplateStoreService {
      */
     public TemplateStore createStore() {
         File storeDirectory = getStoreDirectory(
-                LATEST_TEMPLATE_VERSION, FileStoreV1.STORE_NAME);
-        return new FileStoreV1(storeDirectory);
+                LATEST_TEMPLATE_VERSION, CachedStoreV1.STORE_NAME);
+        return new CachedStoreV1(storeDirectory);
     }
 
     /**
@@ -116,7 +119,7 @@ public class TemplateStoreService {
      */
     public boolean shouldMigrate() {
         return info.templateVersion != LATEST_TEMPLATE_VERSION ||
-                info.repository == null;
+                !CachedStoreV1.STORE_NAME.equals(info.repository);
     }
 
     public StoreInfo getStoreInfo() {

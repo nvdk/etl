@@ -47,7 +47,7 @@ public class StatementsStore implements TemplateStore {
     }
 
     @Override
-    public Collection<Statement> getReferenceDefinition(String id) {
+    public List<Statement> getReferenceDefinition(String id) {
         throw new UnsupportedOperationException();
     }
 

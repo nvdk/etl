@@ -50,11 +50,9 @@ public class MigrateStore {
     }
 
     public StoreInfo migrate() throws BaseException {
-        LOG.info("Migrating store from {} {} to {} {} ...",
+        LOG.info("Migrating store from {} : {} to {} : {} ...",
                 source.getName(), info.templateVersion,
                 target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
-        StoreInfo result = info.clone();
-        result.templateVersion = TemplateStoreService.LATEST_TEMPLATE_VERSION;
         loadRoots();
         if (info.templateVersion < 5) {
             migrateMapping();
@@ -62,9 +60,12 @@ public class MigrateStore {
         for (String reference : source.getReferenceIdentifiers()) {
             migrateReference(reference);
         }
-        LOG.info("Migrating store from {} {} to {} {} ... done",
+        LOG.info("Migrating store from {} : {} to {} : {} ... done",
                 source.getName(), info.templateVersion,
                 target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
+        StoreInfo result = info.clone();
+        result.templateVersion = TemplateStoreService.LATEST_TEMPLATE_VERSION;
+        result.repository = target.getName();
         return result;
     }
 

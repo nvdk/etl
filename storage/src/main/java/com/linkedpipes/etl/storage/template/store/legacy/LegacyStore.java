@@ -146,7 +146,7 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public Collection<Statement> getReferenceDefinition(String id)
+    public List<Statement> getReferenceDefinition(String id)
             throws StoreException {
         Set<Statement> result = new HashSet<>();
         result.addAll(readStatements(id, DEFINITION));

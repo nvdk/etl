@@ -136,7 +136,7 @@ public class FileStoreV1 implements TemplateStore {
     }
 
     @Override
-    public Collection<Statement> getReferenceDefinition(String id)
+    public List<Statement> getReferenceDefinition(String id)
             throws StoreException {
         return readStatements(id, DEFINITION);
     }

@@ -27,7 +27,7 @@ public interface TemplateStore {
             Collection<Statement> configurationDescription)
             throws StoreException;
 
-    Collection<Statement> getReferenceDefinition(String id)
+    List<Statement> getReferenceDefinition(String id)
             throws StoreException;
 
     void setReferenceDefinition(
