@@ -1,5 +1,6 @@
 package com.linkedpipes.etl.storage.template.reference;
 
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 
@@ -15,15 +16,15 @@ public class ReferenceDefinition {
 
     public Resource template;
 
-    public Value prefLabel;
+    public Literal prefLabel;
 
-    public Value description;
+    public Literal description;
 
-    public Value note;
+    public Literal note;
 
     public Value color;
 
-    public List<Value> tags = new ArrayList<>(4);
+    public List<Literal> tags = new ArrayList<>(4);
 
     /**
      * First IRI assigned to this template, used to map template between
@@ -38,6 +39,8 @@ public class ReferenceDefinition {
 
     public Resource configurationGraph;
 
+    public Literal version;
+
     public static ReferenceDefinition copy(ReferenceDefinition other) {
         ReferenceDefinition result = new ReferenceDefinition();
         result.resource = other.resource;
@@ -50,6 +53,7 @@ public class ReferenceDefinition {
         result.knownAs = other.knownAs;
         result.root = other.root;
         result.configurationGraph = other.configurationGraph;
+        result.version = other.version;
         return result;
     }
 

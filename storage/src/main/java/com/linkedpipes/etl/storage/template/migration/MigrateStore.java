@@ -9,9 +9,13 @@ import com.linkedpipes.etl.storage.template.store.TemplateStoreService;
 import com.linkedpipes.etl.storage.template.store.legacy.LegacyStore;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +23,7 @@ import java.util.Map;
  * Migrate data from source to target, it assume that the plugins
  * are already loaded into target.
  */
-public class MigrateStore implements TemplatesInformation {
+public class MigrateStore {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(MigrateStore.class);
@@ -30,13 +34,19 @@ public class MigrateStore implements TemplatesInformation {
 
     protected final StoreInfo info;
 
+    protected File storageDirectory;
+
     protected Map<String, String> roots = new HashMap<>();
 
+    protected Map<String, String> mappings = new HashMap<>();
+
     public MigrateStore(
-            TemplateStore source, TemplateStore target, StoreInfo info) {
+            TemplateStore source, TemplateStore target, StoreInfo info,
+            File storageDirectory) {
         this.source = source;
         this.target = target;
         this.info = info;
+        this.storageDirectory = storageDirectory;
     }
 
     public StoreInfo migrate() throws BaseException {
@@ -46,6 +56,9 @@ public class MigrateStore implements TemplatesInformation {
         StoreInfo result = info.clone();
         result.templateVersion = TemplateStoreService.LATEST_VERSION;
         loadRoots();
+        if (info.templateVersion < 5) {
+            migrateMapping();
+        }
         for (String reference : source.getReferenceIdentifiers()) {
             migrateReference(reference);
         }
@@ -93,15 +106,45 @@ public class MigrateStore implements TemplatesInformation {
         }
     }
 
-    @Override
-    public String getRoot(String identifier) {
-        return roots.get(identifier);
+    /**
+     * For store version 4 the mapping is stored in extra file.
+     */
+    protected void migrateMapping() throws BaseException {
+        File source = new File(storageDirectory, "knowledge");
+        File target = new File(storageDirectory,  "templates/v4-knowledge");
+        if (source.exists()) {
+            try {
+                Files.move(source.toPath(), target.toPath());
+            } catch (IOException ex) {
+                throw new StoreException("Can't move mapping file", ex);
+            }
+        }
+        File mappingFile = new File(target, "mapping.trig");
+        if (mappingFile.exists()) {
+            loadMapping(mappingFile);
+        }
+    }
+
+    protected void loadMapping(File file) throws BaseException {
+        Statements content = Statements.arrayList();
+        try {
+            content.addAll(file);
+        } catch (IOException ex) {
+            throw new BaseException("Can't read mapping file.", ex);
+        }
+        content.stream().filter(st -> st.getPredicate().equals(OWL.SAMEAS))
+                .forEach(st -> {
+                    String remote = st.getSubject().stringValue();
+                    String local = st.getObject().stringValue();
+                    mappings.put(local, remote);
+                });
     }
 
     protected void migrateReference(String id) throws BaseException {
         ReferenceContainer container = loadReferenceToContainer(id);
         int version = info.templateVersion;
-        MigrateTemplate migrateTemplate = new MigrateTemplate(this);
+        MigrateTemplate migrateTemplate = new MigrateTemplate(
+                roots::get, mappings::get);
         container = migrateTemplate.migrateReferenceTemplate(
                 container, version);
         // Store to the new repository. The interface and

@@ -5,7 +5,6 @@ import com.linkedpipes.etl.storage.pipeline.Pipeline;
 import com.linkedpipes.etl.storage.pipeline.PipelineInfo;
 import com.linkedpipes.etl.storage.rdf.PojoLoader;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
-import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -32,11 +31,8 @@ class ImportTransformer {
 
     private ImportTemplates importTemplates;
 
-    public ImportTransformer(
-            TemplateFacade templatesFacade,
-            MappingFacade mappingFacade) {
-        this.importTemplates = new ImportTemplates(
-                templatesFacade, mappingFacade);
+    public ImportTransformer(TemplateFacade templatesFacade) {
+        this.importTemplates = new ImportTemplates(templatesFacade);
     }
 
     public Collection<Statement> localizePipeline(

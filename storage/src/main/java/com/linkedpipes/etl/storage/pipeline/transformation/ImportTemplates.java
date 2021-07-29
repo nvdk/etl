@@ -7,8 +7,6 @@ import com.linkedpipes.etl.storage.pipeline.Pipeline;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
-import com.linkedpipes.etl.storage.template.mapping.Mapping;
-import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -35,8 +33,6 @@ class ImportTemplates {
 
     private final TemplateFacade templateFacade;
 
-    private final MappingFacade mappingFacade;
-
     private boolean importMissing = false;
 
     private boolean updateExisting = false;
@@ -47,14 +43,10 @@ class ImportTemplates {
 
     private Map<IRI, List<Statement>> graphs;
 
-    private Mapping mapping;
-
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    public ImportTemplates(
-            TemplateFacade templateFacade, MappingFacade mappingFacade) {
+    public ImportTemplates(TemplateFacade templateFacade) {
         this.templateFacade = templateFacade;
-        this.mappingFacade = mappingFacade;
     }
 
     public void setImportMissing(boolean importMissing) {
@@ -88,14 +80,12 @@ class ImportTemplates {
         }
         loadMapping(pipelineRdf);
         importTemplates();
-        saveMappingsToHdd();
         return collectPipeline();
     }
 
     private void initialize() {
         this.pipelineGraph = null;
         this.graphs = new HashMap<>();
-        this.mapping = null;
     }
 
     private void loadStatements(Collection<Statement> pipelineRdf) {
@@ -114,7 +104,7 @@ class ImportTemplates {
     }
 
     private void loadMapping(Collection<Statement> pipelineRdf) {
-        this.mapping = mappingFacade.createMappingFromStatements(pipelineRdf);
+        // TODO #884 Import mapping from pipeline.
     }
 
     private void importTemplates() throws BaseException {
@@ -140,32 +130,18 @@ class ImportTemplates {
         }
     }
 
-    private boolean resolveTemplate(TemplateInfo template)
-            throws BaseException {
+    private boolean resolveTemplate(TemplateInfo template) {
         Template localTemplate;
         // First try to just ask for the URL.
         localTemplate = templateFacade.getTemplate(template.getIri());
         if (localTemplate != null) {
             return true;
         }
-        // Try mapping.
-        String templateIri = mapping.remoteToLocal(template.getIri());
-        Template mappedLocalTemplate =
-                templateFacade.getTemplate(templateIri);
-        if (mappedLocalTemplate == null) {
-            if (importMissing) {
-                return importTemplate(template);
-            } else {
-                LOG.info("Skip: {}", templateIri);
-                return false;
-            }
+        // TODO #884 Check for mapping
+        if (importMissing) {
+            return importTemplate(template);
         } else {
-            LOG.debug("Mapping {} to {}", template.getIri(), templateIri);
-            if (updateExisting && mappedLocalTemplate.isReference()) {
-                LOG.info("Updating local template: {}", templateIri);
-                updateLocal(template, (ReferenceTemplate) mappedLocalTemplate);
-            }
-            return true;
+            return false;
         }
     }
 
@@ -205,7 +181,7 @@ class ImportTemplates {
                     remoteTemplate.getDefinition(),
                     remoteTemplate.getConfiguration());
             LOG.info("   imported as : {}", template.getIri());
-            this.mapping.onImport(template, remoteTemplate.getIri());
+            // TODO #884 Store template mapping
         } catch (BaseException ex) {
             LOG.error("Can't import template: {}", remoteTemplate.getIri(), ex);
             LOG.info("Template is ignored.");
@@ -217,16 +193,8 @@ class ImportTemplates {
     private Template getLocalParent(TemplateInfo remoteTemplate) {
         String parentIri = remoteTemplate.getTemplate().stringValue();
         Template localTemplate = templateFacade.getTemplate(parentIri);
-        if (localTemplate == null) {
-            String localParentIri = mapping.remoteToLocal(parentIri);
-            return templateFacade.getTemplate(localParentIri);
-        } else {
-            return localTemplate;
-        }
-    }
-
-    private void saveMappingsToHdd() {
-        mappingFacade.save();
+        // TODO #884 localTemplate may be null, check mapping
+        return localTemplate;
     }
 
     private List<Statement> collectPipeline() {
@@ -268,14 +236,8 @@ class ImportTemplates {
     }
 
     private String getIriForTemplate(String iri) {
-        String result = mapping.remoteToLocal(iri);
-        if (result == null) {
-            // Not mapped, could be a core template, or we just failed
-            // to import something.
-            return iri;
-        } else {
-            return result;
-        }
+        // TODO #884 Check for mapping
+        return iri;
     }
 
     /**

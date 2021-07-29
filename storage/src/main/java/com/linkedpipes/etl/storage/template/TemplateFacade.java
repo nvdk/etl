@@ -4,7 +4,6 @@ import com.linkedpipes.etl.plugin.configuration.ConfigurationFacade;
 import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
 import com.linkedpipes.etl.rdf4j.Statements;
 import com.linkedpipes.etl.storage.BaseException;
-import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
 import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.store.StoreException;
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,8 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @Service
 public class TemplateFacade implements TemplateSource {
@@ -41,41 +37,15 @@ public class TemplateFacade implements TemplateSource {
 
     private final TemplateService manager;
 
-    private final MappingFacade mapping;
-
     private final TemplateStore store;
 
     private final ConfigurationFacade configurationFacade;
 
     @Autowired
-    public TemplateFacade(
-            TemplateService manager,
-            MappingFacade mapping) {
+    public TemplateFacade(TemplateService manager) {
         this.manager = manager;
-        this.mapping = mapping;
         this.configurationFacade = new ConfigurationFacade();
         this.store = manager.getStore();
-    }
-
-    @PostConstruct
-    public void initialize() {
-        cleanMapping();
-    }
-
-    /**
-     * Remove mapping for components that are no longer in the system.
-     */
-    private void cleanMapping() {
-        List<String> iriToRemove = mapping.getLocalMapping().stream()
-                .filter(iri -> !manager.getTemplates().containsKey(iri))
-                .collect(Collectors.toList());
-        for (String iri : iriToRemove) {
-            LOG.debug(
-                    "Removing mapping for '{}' as the component was deleted.",
-                    iri);
-            mapping.remove(iri);
-        }
-        mapping.save();
     }
 
     public Template getTemplate(String iri) {
@@ -311,8 +281,6 @@ public class TemplateFacade implements TemplateSource {
     public void removeReference(ReferenceTemplate template)
             throws BaseException {
         manager.removeReference(template);
-        mapping.remove(template.getIri());
-        mapping.save();
     }
 
     public Collection<Statement> getDefinition(Template template)

@@ -1,9 +1,11 @@
 package com.linkedpipes.etl.storage.template.reference;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
+import com.linkedpipes.etl.model.vocabulary.LP;
 import com.linkedpipes.etl.model.vocabulary.SKOS;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
@@ -32,19 +34,27 @@ public class ReferenceDefinitionAdapter {
                         result.template = (IRI) value;
                     }
                 case SKOS.PREF_LABEL:
-                    result.prefLabel = value;
+                    if (value instanceof Literal) {
+                        result.prefLabel = (Literal) value;
+                    }
                     break;
                 case LP_PIPELINE.HAS_DESCRIPTION:
-                    result.description = value;
+                    if (value instanceof Literal) {
+                        result.description = (Literal) value;
+                    }
                     break;
                 case LP_PIPELINE.HAS_NOTE:
-                    result.note = value;
+                    if (value instanceof Literal) {
+                        result.note = (Literal) value;
+                    }
                     break;
                 case LP_PIPELINE.HAS_COLOR:
                     result.color = value;
                     break;
                 case LP_PIPELINE.HAS_KEYWORD:
-                    result.tags.add(value);
+                    if (value instanceof Literal) {
+                        result.tags.add((Literal) value);
+                    }
                     break;
                 case LP_PIPELINE.HAS_KNOWN_AS:
                     if (value instanceof IRI) {
@@ -57,6 +67,10 @@ public class ReferenceDefinitionAdapter {
                 case LP_PIPELINE.HAS_CONFIGURATION_GRAPH:
                     if (value instanceof IRI) {
                         result.configurationGraph = (IRI) value;
+                    }
+                case LP.HAS_VERSION:
+                    if (value instanceof Literal) {
+                        result.version = (Literal) value;
                     }
             }
         }

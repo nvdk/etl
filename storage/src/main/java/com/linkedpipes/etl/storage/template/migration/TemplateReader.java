@@ -44,7 +44,8 @@ public class TemplateReader {
                 () -> TemplateV1.loadParent(resource, statements),
                 () -> TemplateV2.loadParent(resource, statements),
                 () -> TemplateV3.loadParent(resource, statements),
-                () -> TemplateV4.loadParent(resource, statements)
+                () -> TemplateV4.loadParent(resource, statements),
+                () -> TemplateV5.loadParent(resource, statements)
         );
     }
 
@@ -67,6 +68,7 @@ public class TemplateReader {
                 () -> TemplateV2.loadVersion(resource, statements),
                 () -> TemplateV3.loadVersion(resource, statements),
                 () -> TemplateV4.loadVersion(resource, statements),
+                () -> TemplateV5.loadVersion(resource, statements),
                 () -> defaultValue
         );
     }
@@ -78,7 +80,8 @@ public class TemplateReader {
                 () -> TemplateV1.loadConfiguration(resource, statements),
                 () -> TemplateV2.loadConfiguration(resource, statements),
                 () -> TemplateV3.loadConfiguration(resource, statements),
-                () -> TemplateV4.loadConfiguration(resource, statements)
+                () -> TemplateV4.loadConfiguration(resource, statements),
+                () -> TemplateV5.loadConfiguration(resource, statements)
         );
     }
 

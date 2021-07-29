@@ -65,6 +65,7 @@ public class TemplateService {
     @PostConstruct
     public void initialize() throws BaseException {
         TemplateStoreService storeService = new TemplateStoreService(
+                configuration.getStoreDirectory(),
                 configuration.getTemplatesDirectory());
         storeService.initialize();
         store = storeService.createStore();
@@ -145,8 +146,9 @@ public class TemplateService {
     private void migrateStore(TemplateStoreService storeService)
             throws BaseException {
         TemplateStore source = storeService.createStoreFromInfoFile();
-        MigrateStore migration =
-                new MigrateStore(source, store, storeService.getStoreInfo());
+        MigrateStore migration = new MigrateStore(
+                source, store, storeService.getStoreInfo(),
+                configuration.getStoreDirectory());
         StoreInfo newStoreInfo = migration.migrate();
         storeService.setStoreInfo(newStoreInfo);
     }

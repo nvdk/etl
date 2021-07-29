@@ -35,6 +35,8 @@ public class Configuration {
 
     private String executorMonitorUrl;
 
+    private String storageDirectory;
+
     private final Properties properties = new Properties();
 
     @PostConstruct
@@ -65,7 +67,7 @@ public class Configuration {
         jarDirectory = getProperty("storage.jars.directory");
         domainName = getEnvOrProperty("LP_ETL_DOMAIN", "domain.uri");
 
-        String storageDirectory = getProperty("storage.directory");
+        storageDirectory = getProperty("storage.directory");
         templatesDirectory = storageDirectory + File.separator + "templates";
         pipelinesDirectory = storageDirectory + File.separator + "pipelines";
         knowledgeDirectory = storageDirectory + File.separator + "knowledge";
@@ -94,6 +96,10 @@ public class Configuration {
 
     public File getTemplatesDirectory() {
         return new File(templatesDirectory);
+    }
+
+    public File getStoreDirectory() {
+        return new File(storageDirectory);
     }
 
     public File getPipelinesDirectory() {

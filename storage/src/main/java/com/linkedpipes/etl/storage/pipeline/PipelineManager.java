@@ -133,12 +133,6 @@ class PipelineManager {
             templates = exportPipeline.getTemplates(pipeline, rdf);
             additionalRdf.addAll(exportPipeline.getTemplateRdf(templates));
         }
-        if (includeMapping) {
-            if (templates == null) {
-                templates = exportPipeline.getTemplates(pipeline, rdf);
-            }
-            additionalRdf.addAll(exportPipeline.getMappingRdf(templates));
-        }
         rdf.addAll(additionalRdf);
         if (removePrivateConfig) {
             try {

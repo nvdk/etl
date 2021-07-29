@@ -1,6 +1,5 @@
 package com.linkedpipes.etl.storage.pipeline.transformation;
 
-import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
 import com.linkedpipes.etl.storage.pipeline.Pipeline;
 import com.linkedpipes.etl.storage.pipeline.PipelineInfo;
 import com.linkedpipes.etl.storage.rdf.PojoLoader;
@@ -17,13 +16,9 @@ public class TransformationFacade {
 
     private final TemplateFacade templateFacade;
 
-    private final MappingFacade mappingFacade;
-
     @Autowired
-    public TransformationFacade(
-            TemplateFacade templates, MappingFacade mappings) {
+    public TransformationFacade(TemplateFacade templates) {
         this.templateFacade = templates;
-        this.mappingFacade = mappings;
     }
 
     /**
@@ -48,10 +43,8 @@ public class TransformationFacade {
 
         // Localization may import templates, which may needed to be localized
         // as well, this is done in the transformer.
-        ImportTransformer transformer = new ImportTransformer(
-                templateFacade, mappingFacade);
-        pipeline = transformer.localizePipeline(
-                pipeline, options, info, newIri);
+        ImportTransformer transformer = new ImportTransformer(templateFacade);
+        pipeline = transformer.localizePipeline(pipeline, options, info, newIri);
 
         if (info.getVersion() != Pipeline.VERSION_NUMBER) {
             Migration migration = new Migration(templateFacade);

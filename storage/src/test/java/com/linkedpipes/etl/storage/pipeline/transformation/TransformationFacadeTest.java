@@ -42,7 +42,7 @@ public class TransformationFacadeTest {
                 .thenReturn(sparqlEndpoint);
 
         TransformationFacade transformation =
-                new TransformationFacade(templateFacade, null);
+                new TransformationFacade(templateFacade);
 
         Collection<Statement> actual = transformation.localizeAndMigrate(
                 input, options,
@@ -69,7 +69,7 @@ public class TransformationFacadeTest {
                 true);
 
         TransformationFacade transformation =
-                new TransformationFacade(null, null);
+                new TransformationFacade(null);
 
         Collection<Statement> actual = transformation.localizeAndMigrate(
                 input, options,

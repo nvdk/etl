@@ -17,14 +17,17 @@ public class TemplateStoreService {
 
     protected StoreInfo info = new StoreInfo();
 
-    protected File directory;
+    protected final File templateDirectory;
 
-    public TemplateStoreService(File directory) {
-        this.directory = directory;
+    protected final File storeDirectory;
+
+    public TemplateStoreService(File storeDirectory, File templateDirectory) {
+        this.templateDirectory = templateDirectory;
+        this.storeDirectory = storeDirectory;
     }
 
     public void initialize() {
-        info = StoreInfoAdapter.load(directory);
+        info = StoreInfoAdapter.load(templateDirectory);
     }
 
     /**
@@ -36,7 +39,7 @@ public class TemplateStoreService {
             // it using legacy template.
             String name = "v" + info.templateVersion + "-backup";
             migrateToLegacyRepository(name);
-            return new LegacyStore(new File(directory, name));
+            return new LegacyStore(new File(templateDirectory, name));
         }
         switch (info.repository) {
             case LegacyStore.STORE_NAME:
@@ -52,9 +55,19 @@ public class TemplateStoreService {
     protected void migrateToLegacyRepository(String name) throws StoreException {
         LOG.info("Migrating data to legacy store ...");
         info.repository = LegacyStore.STORE_NAME;
-        File storeDirectory = new File(directory, name);
-        storeDirectory.mkdirs();
-        File[] files = directory.listFiles();
+        File directory = createLegacyDirectory(name);
+        moveLegacyTemplates(directory);
+        LOG.info("Migrating data to legacy store ... done");
+    }
+
+    protected File createLegacyDirectory(String name) {
+        File result = new File(templateDirectory, name);
+        result.mkdirs();
+        return result;
+    }
+
+    protected void moveLegacyTemplates(File directory) throws StoreException {
+        File[] files = templateDirectory.listFiles();
         if (files == null) {
             return;
         }
@@ -67,19 +80,18 @@ public class TemplateStoreService {
                 // New storage version file.
                 continue;
             }
-            File target = new File(storeDirectory, file.getName());
+            File target = new File(directory, file.getName());
             try {
                 Files.move(file.toPath(), target.toPath());
             } catch (IOException ex) {
                 throw new StoreException("Can't move a template", ex);
             }
         }
-        LOG.info("Migrating data to legacy store ... done");
     }
 
     protected TemplateStore createLegacyRepository(int version) {
         String name = "v" + version + "-" + LegacyStore.STORE_NAME;
-        File storeDirectory = new File(directory, name);
+        File storeDirectory = new File(templateDirectory, name);
         return new LegacyStore(storeDirectory);
     }
 
@@ -105,7 +117,7 @@ public class TemplateStoreService {
 
     public void setStoreInfo(StoreInfo info) throws StoreException {
         try {
-            StoreInfoAdapter.save(info, directory);
+            StoreInfoAdapter.save(info, templateDirectory);
         } catch (IOException ex) {
             this.info = info;
             throw new StoreException("Can't save store info.", ex);

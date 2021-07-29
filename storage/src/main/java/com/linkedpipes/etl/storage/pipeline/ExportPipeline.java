@@ -6,7 +6,6 @@ import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateFacade;
-import com.linkedpipes.etl.storage.template.mapping.MappingFacade;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +25,11 @@ class ExportPipeline {
 
     private final TemplateFacade templatesFacade;
 
-    private final MappingFacade mappingFacade;
-
     private final ConfigurationFacade configurationFacade;
 
     @Autowired
-    public ExportPipeline(
-            TemplateFacade templates, MappingFacade mapping) {
+    public ExportPipeline(TemplateFacade templates) {
         this.templatesFacade = templates;
-        this.mappingFacade = mapping;
         this.configurationFacade = new ConfigurationFacade();
     }
 
@@ -73,11 +68,6 @@ class ExportPipeline {
             output.addAll(templatesFacade.getConfig(template));
         }
         return output;
-    }
-
-
-    public Collection<Statement> getMappingRdf(Set<Template> templates) {
-        return mappingFacade.exportForTemplates(templates);
     }
 
     public void removePrivateConfiguration(Collection<Statement> rdf)

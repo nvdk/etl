@@ -59,10 +59,10 @@ class TemplateV1 {
                 new Mapping("t-tabular", "t-tabularChunked"));
     }
 
-    protected final TemplatesInformation templates;
+    protected final TemplateInformation.RootSource rootSource;
 
-    public TemplateV1(TemplatesInformation templates) {
-        this.templates = templates;
+    public TemplateV1(TemplateInformation.RootSource rootSource) {
+        this.rootSource = rootSource;
     }
 
     /**
@@ -76,7 +76,7 @@ class TemplateV1 {
         Resource resource = template.resource;
         String root;
         try {
-            root = templates.getRoot(resource.stringValue());
+            root = rootSource.getRoot(resource.stringValue());
         } catch (BaseException ex) {
             LOG.error("Can't find root for '{}'", resource);
             throw new BaseException("Can't get root template.", ex);
