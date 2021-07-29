@@ -31,11 +31,6 @@ public class StatementsStore implements TemplateStore {
     }
 
     @Override
-    public List<Statement> getPluginInterface(String id) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void setPlugin(
             String id,
             Collection<Statement> definition,
@@ -44,17 +39,6 @@ public class StatementsStore implements TemplateStore {
         model.addAll(definition);
         model.addAll(configuration);
         model.addAll(configurationDescription);
-    }
-
-    @Override
-    public List<Statement> getReferenceInterface(String id) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setReferenceInterface(
-            String id, Collection<Statement> statements) {
-        model.addAll(statements);
     }
 
     @Override

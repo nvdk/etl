@@ -51,10 +51,10 @@ public class MigrateStore {
 
     public StoreInfo migrate() throws BaseException {
         LOG.info("Migrating store from {} {} to {} {} ...",
-                info.repository, info.templateVersion,
-                LegacyStore.STORE_NAME, TemplateStoreService.LATEST_VERSION);
+                source.getName(), info.templateVersion,
+                target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
         StoreInfo result = info.clone();
-        result.templateVersion = TemplateStoreService.LATEST_VERSION;
+        result.templateVersion = TemplateStoreService.LATEST_TEMPLATE_VERSION;
         loadRoots();
         if (info.templateVersion < 5) {
             migrateMapping();
@@ -63,8 +63,8 @@ public class MigrateStore {
             migrateReference(reference);
         }
         LOG.info("Migrating store from {} {} to {} {} ... done",
-                info.repository, info.templateVersion,
-                LegacyStore.STORE_NAME, TemplateStoreService.LATEST_VERSION);
+                source.getName(), info.templateVersion,
+                target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
         return result;
     }
 
@@ -76,7 +76,7 @@ public class MigrateStore {
         Map<String, String> parents = new HashMap<>();
         for (String id : source.getReferenceIdentifiers()) {
             Statements statements = Statements.wrap(
-                    source.getReferenceInterface(id));
+                    source.getReferenceDefinition(id));
             Resource resource = TemplateReader.readResource(statements);
             if (resource == null) {
                 LOG.error("Can't find resource for: {}", id);
@@ -149,7 +149,6 @@ public class MigrateStore {
                 container, version);
         // Store to the new repository. The interface and
         // definition are the same for reference templates.
-        target.setReferenceInterface(id, container.definitionStatements);
         target.setReferenceDefinition(id, container.definitionStatements);
         target.setReferenceConfiguration(id, container.configurationStatements);
     }
@@ -159,7 +158,6 @@ public class MigrateStore {
         ReferenceContainer result = new ReferenceContainer();
         result.definitionStatements = Statements.set();
         result.definitionStatements.addAll(source.getReferenceDefinition(id));
-        result.definitionStatements.addAll(source.getReferenceInterface(id));
         result.configurationStatements = Statements.set();
         result.configurationStatements.addAll(source.getReferenceConfiguration(id));
         result.resource = TemplateReader.readResource(result.definitionStatements);

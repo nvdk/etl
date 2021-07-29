@@ -1,5 +1,6 @@
 package com.linkedpipes.etl.storage.template.store;
 
+import com.linkedpipes.etl.storage.template.store.file.FileStoreV1;
 import com.linkedpipes.etl.storage.template.store.legacy.LegacyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ public class TemplateStoreService {
     private static final Logger LOG =
             LoggerFactory.getLogger(TemplateStoreService.class);
 
-    public static final int LATEST_VERSION = 4;
+    public static final int LATEST_TEMPLATE_VERSION = 5;
 
     protected StoreInfo info = new StoreInfo();
 
@@ -31,7 +32,8 @@ public class TemplateStoreService {
     }
 
     /**
-     * Create store using the info file.
+     * Create store using the info file, i.e. store with the current
+     * data in the file system.
      */
     public TemplateStore createStoreFromInfoFile() throws StoreException {
         if (info.repository == null) {
@@ -41,9 +43,13 @@ public class TemplateStoreService {
             migrateToLegacyRepository(name);
             return new LegacyStore(new File(templateDirectory, name));
         }
+        File storeDirectory = getStoreDirectory(
+                info.templateVersion, info.repository);
         switch (info.repository) {
             case LegacyStore.STORE_NAME:
-                return createLegacyRepository(info.templateVersion);
+                return new LegacyStore(storeDirectory);
+            case FileStoreV1.STORE_NAME:
+                return new FileStoreV1(storeDirectory);
             default:
                 throw new StoreException("Invalid store type.");
         }
@@ -89,17 +95,19 @@ public class TemplateStoreService {
         }
     }
 
-    protected TemplateStore createLegacyRepository(int version) {
-        String name = "v" + version + "-" + LegacyStore.STORE_NAME;
-        File storeDirectory = new File(templateDirectory, name);
-        return new LegacyStore(storeDirectory);
+    protected File getStoreDirectory(int templateVersion, String storeName) {
+        String name = "v" + templateVersion + "-" + storeName;
+        return new File(templateDirectory, name);
     }
 
     /**
-     * Create store using current configuration.
+     * Create latest version of store that should be used to store
+     * templates. Should be used when migrating to latest repository version.
      */
     public TemplateStore createStore() {
-        return createLegacyRepository(LATEST_VERSION);
+        File storeDirectory = getStoreDirectory(
+                LATEST_TEMPLATE_VERSION, FileStoreV1.STORE_NAME);
+        return new FileStoreV1(storeDirectory);
     }
 
     /**
@@ -107,7 +115,7 @@ public class TemplateStoreService {
      * a new repository.
      */
     public boolean shouldMigrate() {
-        return info.templateVersion != LATEST_VERSION ||
+        return info.templateVersion != LATEST_TEMPLATE_VERSION ||
                 info.repository == null;
     }
 

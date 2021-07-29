@@ -152,9 +152,9 @@ public class TemplateFacade implements TemplateSource {
     public Collection<Statement> getInterface(Template template)
             throws BaseException {
         if (template.getCorePlugin()) {
-            return store.getPluginInterface(template.getId());
+            return store.getPluginDefinition(template.getId());
         } else if (template.isReference()) {
-            return store.getReferenceInterface(template.getId());
+            return store.getReferenceDefinition(template.getId());
         } else {
             throw new BaseException("Unknown template: {}", template.getId());
         }

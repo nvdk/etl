@@ -237,10 +237,9 @@ public class TemplateService {
             throws BaseException {
         diff = RdfUtils.forceContext(diff, template.getIri());
         String id = template.getId();
-        Collection<Statement> oldInterface = store.getReferenceInterface(id);
-        Collection<Statement> newInterface = mergeReferenceDefinition(
-                oldInterface, diff);
-        store.setReferenceInterface(id, newInterface);
+        Collection<Statement> oldInterface = store.getReferenceDefinition(id);
+        Collection<Statement> newInterface =
+                mergeReferenceDefinition(oldInterface, diff);
         store.setReferenceDefinition(id, newInterface);
     }
 

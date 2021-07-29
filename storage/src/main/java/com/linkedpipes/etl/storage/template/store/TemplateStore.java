@@ -17,7 +17,7 @@ public interface TemplateStore {
 
     String reserveIdentifier() throws StoreException;
 
-    List<Statement> getPluginInterface(String id)
+    List<Statement> getPluginDefinition(String id)
             throws StoreException;
 
     void setPlugin(
@@ -25,16 +25,6 @@ public interface TemplateStore {
             Collection<Statement> definition,
             Collection<Statement> configuration,
             Collection<Statement> configurationDescription)
-            throws StoreException;
-
-    List<Statement> getReferenceInterface(String id)
-            throws StoreException;
-
-    void setReferenceInterface(
-            String id, Collection<Statement> statements)
-            throws StoreException;
-
-    List<Statement> getPluginDefinition(String id)
             throws StoreException;
 
     Collection<Statement> getReferenceDefinition(String id)

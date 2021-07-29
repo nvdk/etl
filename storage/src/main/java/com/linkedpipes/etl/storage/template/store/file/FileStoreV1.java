@@ -1,4 +1,4 @@
-package com.linkedpipes.etl.storage.template.store.legacy;
+package com.linkedpipes.etl.storage.template.store.file;
 
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
@@ -13,29 +13,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class LegacyStore implements TemplateStore {
+/**
+ * Persist all given data to the given path. Similar to LegacyStore but
+ * does utilize only definition and not the interface.
+ */
+public class FileStoreV1 implements TemplateStore {
 
-    public static final String STORE_NAME = "legacy";
+    public static final String STORE_NAME = "file-v1";
 
     private static final int REFERENCE_CREATE_ATTEMPT = 32;
-
-    private static final String INTERFACE = "interface";
 
     private static final String DEFINITION = "definition";
 
@@ -46,23 +43,13 @@ public class LegacyStore implements TemplateStore {
 
     private final File directory;
 
-    private final Base64.Encoder encoder = Base64.getEncoder();
-
-    public LegacyStore(File directory) {
+    public FileStoreV1(File directory) {
         this.directory = directory;
     }
 
     @Override
     public String getName() {
         return STORE_NAME;
-    }
-
-    protected List<File> listDirectories() {
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return Collections.emptyList();
-        }
-        return Arrays.asList(files);
     }
 
     @Override
@@ -72,6 +59,14 @@ public class LegacyStore implements TemplateStore {
                 .map(File::getName)
                 .filter(name -> !name.startsWith("jar-"))
                 .collect(Collectors.toList());
+    }
+
+    protected List<File> listDirectories() {
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(files);
     }
 
     @Override
@@ -94,14 +89,9 @@ public class LegacyStore implements TemplateStore {
         return new File(directory, id);
     }
 
-
     @Override
-    public List<Statement> getPluginDefinition(String id)
-            throws StoreException {
-        Set<Statement> result = new HashSet<>();
-        result.addAll(readStatements(id, DEFINITION));
-        result.addAll(readStatements(id, INTERFACE));
-        return new ArrayList<>(result);
+    public List<Statement> getPluginDefinition(String id) throws StoreException {
+        return readStatements(id, DEFINITION);
     }
 
     protected List<Statement> readStatements(String id, String fileName)
@@ -148,10 +138,7 @@ public class LegacyStore implements TemplateStore {
     @Override
     public Collection<Statement> getReferenceDefinition(String id)
             throws StoreException {
-        Set<Statement> result = new HashSet<>();
-        result.addAll(readStatements(id, DEFINITION));
-        result.addAll(readStatements(id, INTERFACE));
-        return new ArrayList<>(result);
+        return readStatements(id, DEFINITION);
     }
 
     @Override
@@ -160,6 +147,7 @@ public class LegacyStore implements TemplateStore {
             throws StoreException {
         saveStatements(id, DEFINITION, statements);
     }
+
 
     @Override
     public List<Statement> getPluginConfiguration(String id)
