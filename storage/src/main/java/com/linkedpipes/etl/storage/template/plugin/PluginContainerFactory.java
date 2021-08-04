@@ -1,14 +1,15 @@
 package com.linkedpipes.etl.storage.template.plugin;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
+import com.linkedpipes.etl.plugin.configuration.ConfigurationDescriptionDefinition;
+import com.linkedpipes.etl.plugin.configuration.ConfigurationDescriptionDefinitionAdapter;
+import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
 import com.linkedpipes.etl.storage.utils.LocalizeStatements;
 import com.linkedpipes.etl.storage.utils.Statements;
 import com.linkedpipes.etl.storage.template.TemplateException;
 import com.linkedpipes.plugin.loader.PluginJarFile;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -25,18 +26,6 @@ import java.util.jar.JarFile;
 
 public class PluginContainerFactory {
 
-    private static final IRI CONFIGURATION_DESCRIPTION;
-
-    private static final IRI HAS_CONFIG_TYPE;
-
-    static {
-        ValueFactory valueFactory = SimpleValueFactory.getInstance();
-        CONFIGURATION_DESCRIPTION = valueFactory.createIRI(
-                LP_PIPELINE.CONFIGURATION_DESCRIPTION);
-        HAS_CONFIG_TYPE = valueFactory.createIRI(
-                LP_PIPELINE.HAS_CONFIG_TYPE);
-    }
-
     protected static final Logger LOG =
             LoggerFactory.getLogger(PluginContainerFactory.class);
 
@@ -45,80 +34,58 @@ public class PluginContainerFactory {
 
     public PluginContainer create(PluginJarFile plugin)
             throws TemplateException {
-        Resource description = findDescription(
-                plugin.getConfigurationDescription());
+        ConfigurationDescriptionDefinition description;
+        try {
+            description = ConfigurationDescriptionDefinitionAdapter.create(
+                    plugin.getConfiguration());
+        } catch (InvalidConfiguration ex) {
+            throw new TemplateException(
+                    "Invalid configuration description.", ex);
+        }
 
         Resource configuration = findConfiguration(
-                plugin.getConfigurationDescription(),
                 plugin.getConfiguration(),
-                description);
+                description.forConfigurationType);
 
         Resource targetConfiguration = getConfigurationResource(plugin);
         Resource targetDescription = getDescriptionResource(plugin);
         PluginDefinition definition = createDefinition(
                 plugin, targetConfiguration, targetDescription);
+        description.resource = targetDescription;
 
         PluginContainer result = new PluginContainer();
         // We allow only one plugin per jar-file.
         result.identifier = "jar-" + plugin.getFile().getName();
         result.resource = valueFactory.createIRI(plugin.getPluginIri());
-        result.definitionStatements = PluginDefinitionAdapter.asStatements(definition)
-                .withGraph(definition.resource);
+        result.definitionStatements =
+                PluginDefinitionAdapter.asStatements(definition)
+                        .withGraph(definition.resource);
         result.configurationStatements = updateStatements(
                 plugin.getConfiguration(),
-                configuration, targetConfiguration);
-        result.configurationDescriptionStatements = updateStatements(
-                plugin.getConfigurationDescription(),
-                description, targetDescription);
+                configuration,
+                targetConfiguration);
+        result.configurationDescriptionStatements =
+                Statements.wrap(
+                        ConfigurationDescriptionDefinitionAdapter.asStatements(
+                                description));
         result.files = loadFiles(plugin);
         result.definition = definition;
         return result;
     }
 
-    protected Resource findDescription(Collection<Statement> description)
-            throws TemplateException {
-        Statements statements = Statements.wrap(description);
-        Collection<Resource> candidates = statements.select(
-                null, RDF.TYPE, CONFIGURATION_DESCRIPTION).subjects();
-        if (candidates.size() != 1) {
-            LOG.info("Expected one configuration description got {}",
-                    candidates.size());
-            throw new TemplateException(
-                    "Invalid configuration description.");
-        }
-        return candidates.iterator().next();
-    }
 
     protected Resource findConfiguration(
-            Collection<Statement> description,
             Collection<Statement> configuration,
-            Resource descriptionResource) throws TemplateException {
-        Collection<Value> configurationTypeCandidates =
-                Statements.wrap(description)
-                        .select(descriptionResource, HAS_CONFIG_TYPE, null)
-                        .objects();
-        if (configurationTypeCandidates.size() != 1) {
-            LOG.info("Expected one configuration type got {}",
-                    configurationTypeCandidates.size());
-            throw new TemplateException(
-                    "Invalid configuration description.");
-        }
-        Value configurationType = configurationTypeCandidates.iterator().next();
-        if (!(configurationType instanceof Resource)) {
-            LOG.info("Invalid configuration type {}",
-                    configurationType);
-            throw new TemplateException(
-                    "Invalid configuration description.");
-        }
+            Resource configurationType) throws TemplateException {
+
         Collection<Resource> configurationCandidates =
                 Statements.wrap(configuration)
-                        .select(null, RDF.TYPE,
-                                configurationTypeCandidates.iterator().next())
+                        .select(null, RDF.TYPE, configurationType)
                         .subjects();
         if (configurationCandidates.size() != 1) {
             LOG.info("Expected one configuration class got {} for type {}",
                     configurationCandidates.size(),
-                    configurationTypeCandidates.iterator().next());
+                    configurationType);
             throw new TemplateException("Invalid configuration.");
         }
         return configurationCandidates.iterator().next();
