@@ -2,6 +2,8 @@ package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
+import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
+import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 
 public class MigrateTemplate {
 
@@ -16,27 +18,48 @@ public class MigrateTemplate {
         this.mappingSource = mappingSource;
     }
 
+    /**
+     * All migration function must consume and produce the data as statements.
+     * The container.definition should must not be used.
+     */
     public ReferenceContainer migrateReferenceTemplate(
             ReferenceContainer template, int defaultVersion
     ) throws BaseException {
-        ReferenceContainer result = template;
+        ReferenceContainer container = template;
         if (defaultVersion < 1) {
-            result = (new TemplateV0()).migrateToV1(result);
+            container = (new TemplateV0()).migrateToV1(container);
         }
         if (defaultVersion < 2) {
-            result = (new TemplateV1(rootSource)).migrateToV2(result);
+            container = (new TemplateV1(rootSource)).migrateToV2(container);
         }
         if (defaultVersion < 3) {
-            result = (new TemplateV2()).migrateToV3(result);
+            container = (new TemplateV2()).migrateToV3(container);
         }
         if (defaultVersion < 4) {
-            result = (new TemplateV3()).migrateToV4(result);
+            container = (new TemplateV3()).migrateToV4(container);
         }
         if (defaultVersion < 5) {
-            result = (new TemplateV4(rootSource, mappingSource))
-                    .migrateToV5(result);
+            container = (new TemplateV4(rootSource, mappingSource))
+                    .migrateToV5(container);
         }
-        return result;
+        synchronizeDefinitions(container);
+        return container;
+    }
+
+    /**
+     * Make sure that definition and definitionStatements holds the same
+     * information. We use definitionStatements as the main source
+     * as it is used by migration.
+     */
+    protected void synchronizeDefinitions(ReferenceContainer container)
+            throws BaseException {
+        container.definition = ReferenceDefinitionAdapter.create(
+                container.definitionStatements);
+        if (container.definition == null) {
+            throw new BaseException("Missing template definition.");
+        }
+        container.definitionStatements =
+                ReferenceDefinitionAdapter.asStatements(container.definition);
     }
 
 }

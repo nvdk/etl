@@ -267,9 +267,9 @@ public class TemplateFacade implements TemplateSource {
     }
 
     public void updateReferenceInterface(
-            ReferenceTemplate template, Collection<Statement> diff)
+            ReferenceTemplate template, Collection<Statement> statements)
             throws BaseException {
-        manager.updateReferenceTemplate(template, diff);
+        manager.updateReferenceTemplate(template, statements);
     }
 
     public void updateConfig(

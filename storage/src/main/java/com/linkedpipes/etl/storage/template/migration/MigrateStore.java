@@ -2,6 +2,8 @@ package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
+import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
+import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;

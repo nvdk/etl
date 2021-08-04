@@ -23,7 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.slf4j.Logger;
@@ -233,44 +232,29 @@ public class TemplateService {
     }
 
     public void updateReferenceTemplate(
-            ReferenceTemplate template, Collection<Statement> diff)
+            ReferenceTemplate template, Collection<Statement> statements)
             throws BaseException {
-        diff = RdfUtils.forceContext(diff, template.getIri());
         String id = template.getId();
-        Collection<Statement> oldInterface = store.getReferenceDefinition(id);
-        Collection<Statement> newInterface =
-                mergeReferenceDefinition(oldInterface, diff);
-        store.setReferenceDefinition(id, newInterface);
+        ReferenceDefinition definition = ReferenceDefinitionAdapter.create(
+                store.getReferenceDefinition(id));
+        ReferenceDefinition newDefinition =
+                ReferenceDefinitionAdapter.create(statements);
+        updateReferenceTemplateDefinition(definition, newDefinition);
+        store.setReferenceDefinition(
+                id, ReferenceDefinitionAdapter.asStatements(definition));
     }
 
-    private List<Statement> mergeReferenceDefinition(
-            Collection<Statement> data, Collection<Statement> diff) {
-        Map<Resource, Map<IRI, List<Value>>> toReplace = new HashMap<>();
-        diff.forEach((s) ->
-                toReplace.computeIfAbsent(s.getSubject(),
-                        (key) -> new HashMap<>())
-                        .computeIfAbsent(s.getPredicate(),
-                                (key) -> new ArrayList<>())
-                        .add(s.getObject()));
-        List<Statement> output = new ArrayList<>(diff);
-        List<Statement> leftFromOriginal =
-                removeWithSubjectAndPredicate(data, diff);
-        output.addAll(leftFromOriginal);
-        return output;
-    }
-
-    private List<Statement> removeWithSubjectAndPredicate(
-            Collection<Statement> data, Collection<Statement> toRemove) {
-        Map<Resource, Set<IRI>> toDelete = new HashMap<>();
-        toRemove.forEach((s) -> {
-            toDelete.computeIfAbsent(s.getSubject(), (key) -> new HashSet<>())
-                    .add(s.getPredicate());
-        });
-        // Remove all that are not in the toDelete map.
-        return data.stream().filter((s) ->
-                !toDelete.getOrDefault(s.getSubject(), Collections.EMPTY_SET)
-                        .contains(s.getPredicate())
-        ).collect(Collectors.toList());
+    /**
+     * Merge definition, by doing so specify what can be updated.
+     */
+    private void updateReferenceTemplateDefinition(
+            ReferenceDefinition definition,
+            ReferenceDefinition newDefinition) {
+        definition.prefLabel = newDefinition.prefLabel;
+        definition.description = newDefinition.description;
+        definition.note = newDefinition.note;
+        definition.color = newDefinition.color;
+        definition.tags = newDefinition.tags;
     }
 
     public void updateReferenceConfiguration(
