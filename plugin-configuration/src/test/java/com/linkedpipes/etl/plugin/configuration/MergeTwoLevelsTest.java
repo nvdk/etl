@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class MergeTwoLevelsTest {
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     @Test
     public void mergeTwoLevelInherit() throws Exception {

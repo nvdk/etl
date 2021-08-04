@@ -8,6 +8,8 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,13 +31,16 @@ public class MergeConfiguration {
 
         public List<Statement> statements = new ArrayList<>();
 
-        public final Description.Member member;
+        public final ConfigurationDescriptionDefinition.Member member;
 
-        public PredicateTree(Description.Member member) {
+        public PredicateTree(ConfigurationDescriptionDefinition.Member member) {
             this.member = member;
         }
 
     }
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(MergeConfiguration.class);
 
     private static final Set<IRI> ESSENTIAL_PREDICATES = new HashSet<>();
 
@@ -48,23 +53,23 @@ public class MergeConfiguration {
     public List<Statement> merge(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            Description description,
+            ConfigurationDescriptionDefinition description,
             String baseIri, IRI graph) throws InvalidConfiguration {
         List<Statement> result;
-        if (description.getGlobalControl() == null) {
+        if (description.globalControlProperty == null) {
             result = mergeMemberControlled(
                     parentRdf, instanceRdf, description, baseIri);
         } else {
             result = mergeGloballyControlled(
                     parentRdf, instanceRdf, description, baseIri);
         }
-        return RdfUtils.setGraph(result, graph);
+        return StatementsUtils.setGraph(result, graph);
     }
 
     private List<Statement> mergeGloballyControlled(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            Description description, String baseIri
+            ConfigurationDescriptionDefinition description, String baseIri
     ) throws InvalidConfiguration {
         Resource parentResource = findEntity(parentRdf, description);
         Resource instanceResource = findEntity(instanceRdf, description);
@@ -80,12 +85,14 @@ public class MergeConfiguration {
     }
 
     private Resource findEntity(
-            List<Statement> statements, Description description) {
+            List<Statement> statements,
+            ConfigurationDescriptionDefinition description) {
         for (Statement statement : statements) {
             if (!statement.getPredicate().equals(RDF.TYPE)) {
                 continue;
             }
-            if (statement.getObject().equals(description.getType())) {
+            if (statement.getObject().equals(
+                    description.forConfigurationType)) {
                 return statement.getSubject();
             }
         }
@@ -117,14 +124,15 @@ public class MergeConfiguration {
     }
 
     private String getGlobalControl(
-            Description description, List<Statement> statements,
+            ConfigurationDescriptionDefinition description,
+            List<Statement> statements,
             Resource resource) {
         for (Statement statement : statements) {
             if (!statement.getSubject().equals(resource)) {
                 continue;
             }
             if (statement.getPredicate().equals(
-                    description.getGlobalControl())) {
+                    description.globalControlProperty)) {
                 return statement.getObject().stringValue();
             }
         }
@@ -135,7 +143,7 @@ public class MergeConfiguration {
     private List<Statement> mergeGlobal(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            Description description,
+            ConfigurationDescriptionDefinition description,
             Resource parentResource,
             Resource instanceResource,
             String parentControl,
@@ -147,7 +155,7 @@ public class MergeConfiguration {
                 return replaceControlAndSubject(
                         parentRdf,
                         parentResource,
-                        description.getGlobalControl(),
+                        description.globalControlProperty,
                         LP.FORCED,
                         baseIri);
             case LP.NONE:
@@ -164,28 +172,28 @@ public class MergeConfiguration {
                 return replaceControlAndSubject(
                         instanceRdf,
                         instanceResource,
-                        description.getGlobalControl(),
+                        description.globalControlProperty,
                         LP.FORCED,
                         baseIri);
             case LP.NONE:
                 return replaceControlAndSubject(
                         instanceRdf,
                         instanceResource,
-                        description.getGlobalControl(),
+                        description.globalControlProperty,
                         LP.NONE,
                         baseIri);
             case LP.INHERIT_AND_FORCE:
                 return replaceControlAndSubject(
                         parentRdf,
                         parentResource,
-                        description.getGlobalControl(),
+                        description.globalControlProperty,
                         LP.FORCED,
                         baseIri);
             case LP.INHERIT:
                 return replaceControlAndSubject(
                         parentRdf,
                         parentResource,
-                        description.getGlobalControl(),
+                        description.globalControlProperty,
                         LP.NONE,
                         baseIri);
             case LP.FORCED:
@@ -205,7 +213,7 @@ public class MergeConfiguration {
                         && statement.getPredicate().equals(predicate));
         result.add(valueFactory.createStatement(
                 resource, predicate, valueFactory.createIRI(control)));
-        RdfUtils.updateSubject(
+        StatementsUtils.updateSubject(
                 result, resource,
                 valueFactory.createIRI(baseIri + "/1"));
         return result;
@@ -214,17 +222,19 @@ public class MergeConfiguration {
     private List<Statement> mergeMemberControlled(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            Description description, String baseIri
+            ConfigurationDescriptionDefinition description,
+            String baseIri
     ) throws InvalidConfiguration {
         Resource parentResource = findEntity(parentRdf, description);
         Resource instanceResource = findEntity(instanceRdf, description);
-        Map<Description.Member, PredicateTree> parent =
+        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> parent =
                 loadTreesForPredicates(description, parentRdf, parentResource);
-        Map<Description.Member, PredicateTree> instance =
+        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> instance =
                 loadTreesForPredicates(
                         description, instanceRdf, instanceResource);
         List<Statement> result = selectEssentials(parentRdf, parentResource);
-        for (Description.Member member : description.getMembers()) {
+        for (ConfigurationDescriptionDefinition.Member member :
+                description.members) {
             PredicateTree parentTree = parent.get(member);
             PredicateTree instanceTree = instance.get(member);
             result.addAll(mergeTrees(
@@ -233,21 +243,25 @@ public class MergeConfiguration {
         }
         // Rename resource to child, so we are not left
         // with the parent (template) IRI.
-        RdfUtils.updateSubject(result, parentResource, instanceResource);
+        StatementsUtils.updateSubject(result, parentResource, instanceResource);
         return result;
     }
 
-    private Map<Description.Member, PredicateTree> loadTreesForPredicates(
-            Description description, List<Statement> statements,
+    private Map<ConfigurationDescriptionDefinition.Member, PredicateTree>
+    loadTreesForPredicates(
+            ConfigurationDescriptionDefinition description,
+            List<Statement> statements,
             Resource resource) {
-        Map<Description.Member, PredicateTree> result = new HashMap<>();
+        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> result =
+                new HashMap<>();
         Map<IRI, PredicateTree> dataPredicates = new HashMap<>();
         Map<IRI, PredicateTree> controlPredicates = new HashMap<>();
-        for (Description.Member member : description.getMembers()) {
+        for (ConfigurationDescriptionDefinition.Member member :
+                description.members) {
             PredicateTree predicateTree = new PredicateTree(member);
             result.put(member, predicateTree);
-            dataPredicates.put(member.getProperty(), predicateTree);
-            controlPredicates.put(member.getControl(), predicateTree);
+            dataPredicates.put(member.property, predicateTree);
+            controlPredicates.put(member.controlProperty, predicateTree);
         }
         //
         for (Statement statement : statements) {
@@ -376,7 +390,7 @@ public class MergeConfiguration {
             Resource from, Resource to) {
         List<Statement> result = new ArrayList<>();
         result.add(valueFactory.createStatement(
-                to, tree.member.getControl(),
+                to, tree.member.controlProperty,
                 valueFactory.createIRI(controlPredicate)));
         for (Statement statement : tree.statements) {
             if (statement.getSubject().equals(from)) {

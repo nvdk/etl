@@ -11,15 +11,16 @@ import java.util.stream.Collectors;
 class SelectPrivateStatements {
 
     public List<Statement> selectPrivate(
-            List<Statement> rdf, Description description) {
-        Set<IRI> privatePredicates = description.getMembers().stream()
-                .filter(Description.Member::isPrivate)
-                .map(Description.Member::getProperty)
+            ConfigurationDescriptionDefinition description,
+            List<Statement> statements) {
+        Set<IRI> privatePredicates = description.members.stream()
+                .filter(member -> member.isPrivate.booleanValue())
+                .map(member -> member.property)
                 .collect(Collectors.toSet());
         if (privatePredicates.isEmpty()) {
             return Collections.emptyList();
         }
-        return rdf.stream().filter(
+        return statements.stream().filter(
                 (st) -> privatePredicates.contains(st.getPredicate()))
                 .collect(Collectors.toList());
     }

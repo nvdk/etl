@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-class RdfUtils {
+class StatementsUtils {
 
     public static void updateSubject(
             List<Statement> statements, Resource source, Resource target) {

@@ -8,30 +8,29 @@ import java.util.List;
 
 public class ConfigurationFacade {
 
-    private DescriptionAdapter descriptionAdapter = new DescriptionAdapter();
-
     public List<Statement> createNewFromJarFile(
             List<Statement> configurationRdf, List<Statement> descriptionRdf,
             String baseIri, IRI graph)
             throws InvalidConfiguration {
-        Description description = loadDescription(descriptionRdf);
-        CreateNewConfiguration worker = new CreateNewConfiguration();
-        return worker.createNewFromJarFile(
+        ConfigurationDescriptionDefinition description =
+                loadDescription(descriptionRdf);
+        return (new CreateNewConfiguration()).createNewFromJarFile(
                 configurationRdf, description, baseIri, graph);
     }
 
-    private Description loadDescription(List<Statement> statements)
+    protected ConfigurationDescriptionDefinition loadDescription(
+            List<Statement> statements)
             throws InvalidConfiguration {
-        return descriptionAdapter.fromStatements(statements);
+        return ConfigurationDescriptionDefinitionAdapter.create(statements);
     }
 
     public List<Statement> createNewFromTemplate(
             List<Statement> configurationRdf, List<Statement> descriptionRdf,
             String baseIri, IRI graph)
             throws InvalidConfiguration {
-        Description description = loadDescription(descriptionRdf);
-        CreateNewConfiguration worker = new CreateNewConfiguration();
-        return worker.createNewFromTemplate(
+        ConfigurationDescriptionDefinition description =
+                loadDescription(descriptionRdf);
+        return (new CreateNewConfiguration()).createNewFromTemplate(
                 configurationRdf, description, baseIri, graph);
     }
 
@@ -42,7 +41,8 @@ public class ConfigurationFacade {
             List<List<Statement>> configurationsRdf,
             List<Statement> descriptionRdf,
             String baseIri, IRI graph) throws InvalidConfiguration {
-        Description description = loadDescription(descriptionRdf);
+        ConfigurationDescriptionDefinition description =
+                loadDescription(descriptionRdf);
         MergeConfiguration mergeConfiguration = new MergeConfiguration();
         List<Statement> result = new ArrayList<>(configurationsRdf.get(0));
         for (int index = 1; index < configurationsRdf.size(); ++index) {
@@ -63,9 +63,10 @@ public class ConfigurationFacade {
     public List<Statement> selectPrivateStatements(
             List<Statement> configurationRdf,
             List<Statement> descriptionRdf) throws InvalidConfiguration {
-        Description description = loadDescription(descriptionRdf);
-        SelectPrivateStatements selectPrivate = new SelectPrivateStatements();
-        return selectPrivate.selectPrivate(configurationRdf, description);
+        ConfigurationDescriptionDefinition description =
+                loadDescription(descriptionRdf);
+        return (new SelectPrivateStatements())
+                .selectPrivate(description, configurationRdf);
     }
 
 }

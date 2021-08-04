@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class MergeWithGlobalTest {
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     @Test
     public void mergeGlobalControlIafF() throws Exception {

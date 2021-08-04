@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class MergeTest {
 
-    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     @Test
     public void merge000() throws Exception {

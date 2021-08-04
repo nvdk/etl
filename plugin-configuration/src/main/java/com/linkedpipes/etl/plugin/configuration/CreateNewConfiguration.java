@@ -29,38 +29,41 @@ class CreateNewConfiguration {
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     public List<Statement> createNewFromJarFile(
-            List<Statement> configuration, Description description,
+            List<Statement> configuration,
+            ConfigurationDescriptionDefinition description,
             String baseIri, IRI graph) {
         return createNew(configuration, description,
                 baseIri, graph, CONTROL_NONE);
     }
 
     public List<Statement> createNewFromTemplate(
-            List<Statement> configuration, Description description,
+            List<Statement> configuration,
+            ConfigurationDescriptionDefinition description,
             String baseIri, IRI graph) {
         return createNew(configuration, description,
                 baseIri, graph, CONTROL_INHERIT);
     }
 
     private List<Statement> createNew(
-            List<Statement> configuration, Description description,
+            List<Statement> configuration,
+            ConfigurationDescriptionDefinition description,
             String baseIri, IRI graph, IRI defaultControl) {
         int counter = 1;
         Map<Resource, List<Statement>> entities = splitBySubject(configuration);
         for (var entry : entities.entrySet()) {
-            if (!isOfType(entry.getValue(), description.getType())) {
+            if (!isOfType(entry.getValue(), description.forConfigurationType)) {
                 continue;
             }
             replaceControls(
                     entry.getValue(), description,
                     entry.getKey(), defaultControl);
-            RdfUtils.updateSubject(
+            StatementsUtils.updateSubject(
                     entry.getValue(),
                     entry.getKey(),
                     valueFactory.createIRI(baseIri + "/" + counter));
         }
         List<Statement> result = collectStatements(entities);
-        result = RdfUtils.setGraph(result, graph);
+        result = StatementsUtils.setGraph(result, graph);
         return result;
     }
 
@@ -89,7 +92,8 @@ class CreateNewConfiguration {
     }
 
     private void replaceControls(
-            List<Statement> statements, Description description,
+            List<Statement> statements,
+            ConfigurationDescriptionDefinition description,
             Resource resource, IRI defaultControl) {
         // Prepare array with default values.
         Map<IRI, Value> controls =
@@ -101,10 +105,11 @@ class CreateNewConfiguration {
     }
 
     private Map<IRI, Value> createDefaultControls(
-            Description description, IRI defaultControl) {
+            ConfigurationDescriptionDefinition description, IRI defaultControl) {
         Map<IRI, Value> result = new HashMap<>();
-        for (Description.Member member : description.getMembers()) {
-            result.put(member.getControl(), defaultControl);
+        for (ConfigurationDescriptionDefinition.Member member :
+                description.members) {
+            result.put(member.controlProperty, defaultControl);
         }
         return result;
     }
