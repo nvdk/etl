@@ -1,6 +1,5 @@
 package com.linkedpipes.etl.storage.template.plugin;
 
-import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
 import com.linkedpipes.etl.plugin.configuration.ConfigurationDescriptionDefinition;
 import com.linkedpipes.etl.plugin.configuration.ConfigurationDescriptionDefinitionAdapter;
 import com.linkedpipes.etl.plugin.configuration.InvalidConfiguration;
@@ -37,7 +36,7 @@ public class PluginContainerFactory {
         ConfigurationDescriptionDefinition description;
         try {
             description = ConfigurationDescriptionDefinitionAdapter.create(
-                    plugin.getConfiguration());
+                    plugin.getConfigurationDescription());
         } catch (InvalidConfiguration ex) {
             throw new TemplateException(
                     "Invalid configuration description.", ex);

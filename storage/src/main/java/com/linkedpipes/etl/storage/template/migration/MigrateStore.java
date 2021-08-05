@@ -2,13 +2,10 @@ package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
-import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
-import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
-import com.linkedpipes.etl.storage.template.store.TemplateStoreService;
-import com.linkedpipes.etl.storage.template.store.legacy.LegacyStore;
+import com.linkedpipes.etl.storage.template.store.TemplateStoreFactory;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
@@ -34,7 +31,7 @@ public class MigrateStore {
 
     protected final TemplateStore target;
 
-    protected final StoreInfo info;
+    protected final StoreInfo sourceInfo;
 
     protected File storageDirectory;
 
@@ -43,32 +40,28 @@ public class MigrateStore {
     protected Map<String, String> mappings = new HashMap<>();
 
     public MigrateStore(
-            TemplateStore source, TemplateStore target, StoreInfo info,
+            TemplateStore source, TemplateStore target, StoreInfo sourceInfo,
             File storageDirectory) {
         this.source = source;
         this.target = target;
-        this.info = info;
+        this.sourceInfo = sourceInfo;
         this.storageDirectory = storageDirectory;
     }
 
-    public StoreInfo migrate() throws BaseException {
+    public void migrate() throws BaseException {
         LOG.info("Migrating store from {} : {} to {} : {} ...",
-                source.getName(), info.templateVersion,
-                target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
+                source.getName(), sourceInfo.templateVersion,
+                target.getName(), StoreInfo.LATEST_TEMPLATE_VERSION);
         loadRoots();
-        if (info.templateVersion < 5) {
+        if (sourceInfo.templateVersion < 5) {
             migrateMapping();
         }
         for (String reference : source.getReferenceIdentifiers()) {
             migrateReference(reference);
         }
         LOG.info("Migrating store from {} : {} to {} : {} ... done",
-                source.getName(), info.templateVersion,
-                target.getName(), TemplateStoreService.LATEST_TEMPLATE_VERSION);
-        StoreInfo result = info.clone();
-        result.templateVersion = TemplateStoreService.LATEST_TEMPLATE_VERSION;
-        result.repository = target.getName();
-        return result;
+                source.getName(), sourceInfo.templateVersion,
+                target.getName(), StoreInfo.LATEST_TEMPLATE_VERSION);
     }
 
     /**
@@ -145,7 +138,7 @@ public class MigrateStore {
 
     protected void migrateReference(String id) throws BaseException {
         ReferenceContainer container = loadReferenceToContainer(id);
-        int version = info.templateVersion;
+        int version = sourceInfo.templateVersion;
         MigrateTemplate migrateTemplate = new MigrateTemplate(
                 roots::get, mappings::get);
         container = migrateTemplate.migrateReferenceTemplate(

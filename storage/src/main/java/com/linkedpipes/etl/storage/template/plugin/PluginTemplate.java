@@ -13,12 +13,12 @@ public class PluginTemplate extends Template {
     }
 
     @Override
-    public boolean getCorePlugin() {
+    public boolean isPluginTemplate() {
         return true;
     }
 
     @Override
-    public boolean isReference() {
+    public boolean isReferenceTemplate() {
         return false;
     }
 

@@ -13,8 +13,8 @@ public class StoreInfoAdapter {
     private static final Logger LOG =
             LoggerFactory.getLogger(StoreInfoAdapter.class);
 
-    public static StoreInfo load(File directory) {
-        File file = repositoryFile(directory);
+    public static StoreInfo loadForStore(File storeDirectory) {
+        File file = repositoryFile(storeDirectory);
         if (!file.exists()) {
             return new StoreInfo();
         }
@@ -25,7 +25,8 @@ public class StoreInfoAdapter {
         return loadFromJsonNode(root);
     }
 
-    protected static File repositoryFile(File directory) {
+    protected static File repositoryFile(File storeDirectory) {
+        File directory = new File(storeDirectory, "templates");
         return new File(directory, "repository-info.json");
     }
 
@@ -55,11 +56,15 @@ public class StoreInfoAdapter {
         return result;
     }
 
-    public static void save(StoreInfo info, File directory)
-            throws IOException {
-        File file = repositoryFile(directory);
+    public static void saveForStore(File storeDirectory, StoreInfo info)
+            throws StoreException {
+        File file = repositoryFile(storeDirectory);
         ObjectMapper mapper = new ObjectMapper();
+        try {
         mapper.writeValue(file, info);
+        } catch (IOException ex) {
+            throw new StoreException("Can't save store info.", ex);
+        }
     }
 
 }

@@ -35,18 +35,22 @@ public class ReferenceTemplate extends Template {
         this.corePlugin = corePlugin;
     }
 
+    public String getCorePlugin() {
+        return corePlugin;
+    }
+
     @Override
     public String getIri() {
         return iri;
     }
 
     @Override
-    public boolean getCorePlugin() {
+    public boolean isPluginTemplate() {
         return false;
     }
 
     @Override
-    public boolean isReference() {
+    public boolean isReferenceTemplate() {
         return true;
     }
 

@@ -94,7 +94,7 @@ public class ComponentServlet {
             @RequestParam(name = "component") MultipartFile componentRdf)
             throws BaseException {
         Template template = getTemplate(iri);
-        if (template.isReference()) {
+        if (template.isReferenceTemplate()) {
             templateFacade.updateReferenceInterface(
                     (ReferenceTemplate) template, RdfUtils.read(componentRdf));
         } else {
@@ -269,7 +269,7 @@ public class ComponentServlet {
             HttpServletResponse response)
             throws BaseException {
         Template template = getTemplate(iri);
-        if (template.isReference()) {
+        if (template.isReferenceTemplate()) {
             templateFacade.removeReference((ReferenceTemplate) template);
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
