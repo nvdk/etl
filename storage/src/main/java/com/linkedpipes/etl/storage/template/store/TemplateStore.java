@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * The identifiers are not IRIs but for example: jar-e-textHolder-0.0.0.jar
  * or 1622805775578-ff2aa41d-16d7-413f-b44b-99b8902a76ad .
+ *
+ * All statements must be in a correct graph.
  */
 public interface TemplateStore {
 

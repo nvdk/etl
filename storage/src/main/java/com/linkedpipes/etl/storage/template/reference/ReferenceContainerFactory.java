@@ -1,7 +1,7 @@
 package com.linkedpipes.etl.storage.template.reference;
 
-import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
+import com.linkedpipes.etl.storage.template.TemplateException;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
@@ -17,19 +17,32 @@ public class ReferenceContainerFactory {
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
+    private final RootTemplateSource rootSource;
+
+    public ReferenceContainerFactory(RootTemplateSource rootSource) {
+        this.rootSource = rootSource;
+    }
+
     public ReferenceContainer create(
             String id, String iri,
             Collection<Statement> definitionStatements,
             Collection<Statement> configurationStatements)
-            throws BaseException {
+            throws TemplateException {
         ReferenceDefinition definition =
                 ReferenceDefinitionAdapter.create(definitionStatements);
         if (definition == null) {
-            throw new BaseException("Missing reference template type.");
+            throw new TemplateException("Missing reference template type.");
         }
         definition.resource = valueFactory.createIRI(iri);
-
-
+        definition.configurationGraph = createConfigurationIri(definition);
+        // Older templates may not have root specified.
+        if (definition.root == null) {
+            String parent = definition.template.stringValue();
+            String root = rootSource.getRootTemplate(parent);
+            if (root != null) {
+                definition.root = valueFactory.createIRI(root);
+            }
+        }
         //
         ReferenceContainer result = new ReferenceContainer();
         result.identifier = id;

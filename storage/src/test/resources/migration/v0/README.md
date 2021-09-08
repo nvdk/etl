@@ -1,0 +1,1 @@
+There was no change to templates from version 0 to version 1.

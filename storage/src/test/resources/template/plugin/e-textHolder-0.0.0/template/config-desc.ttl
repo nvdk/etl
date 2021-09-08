@@ -1,7 +1,7 @@
 @prefix th: <http://plugins.linkedpipes.com/ontology/e-textHolder#> .
 @prefix config: <http://plugins.linkedpipes.com/ontology/configuration/> .
 
-<http://linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration/desc>
+<http://linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration/desc-INVALID-LINK>
     a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
     config:type <http://plugins.linkedpipes.com/ontology/e-textHolder#Configuration> ;
     config:member <http://linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration/desc/fileName>,

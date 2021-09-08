@@ -107,7 +107,7 @@ public class MigrateStore {
      */
     protected void migrateMapping() throws BaseException {
         File source = new File(storageDirectory, "knowledge");
-        File target = new File(storageDirectory,  "templates/v4-knowledge");
+        File target = new File(storageDirectory, "templates/v4-knowledge");
         if (source.exists()) {
             try {
                 Files.move(source.toPath(), target.toPath());
@@ -145,8 +145,10 @@ public class MigrateStore {
                 container, version);
         // Store to the new repository. The interface and
         // definition are the same for reference templates.
-        target.setReferenceDefinition(id, container.definitionStatements);
-        target.setReferenceConfiguration(id, container.configurationStatements);
+        target.setReferenceDefinition(
+                id, container.definitionStatements);
+        target.setReferenceConfiguration(
+                id, container.configurationStatements);
     }
 
     protected ReferenceContainer loadReferenceToContainer(
@@ -155,8 +157,10 @@ public class MigrateStore {
         result.definitionStatements = Statements.set();
         result.definitionStatements.addAll(source.getReferenceDefinition(id));
         result.configurationStatements = Statements.set();
-        result.configurationStatements.addAll(source.getReferenceConfiguration(id));
-        result.resource = TemplateReader.readResource(result.definitionStatements);
+        result.configurationStatements.addAll(
+                source.getReferenceConfiguration(id));
+        result.resource = TemplateReader.readResource(
+                result.definitionStatements);
         return result;
     }
 

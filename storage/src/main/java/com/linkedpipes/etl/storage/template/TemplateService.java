@@ -3,28 +3,20 @@ package com.linkedpipes.etl.storage.template;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.Configuration;
 import com.linkedpipes.etl.storage.rdf.RdfUtils;
-import com.linkedpipes.etl.storage.template.migration.MigrateStore;
-import com.linkedpipes.etl.storage.template.plugin.LoadPluginTemplates;
 import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
-import com.linkedpipes.etl.storage.template.reference.LoadReferenceTemplates;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainerFactory;
+import com.linkedpipes.etl.storage.template.reference.RootTemplateSource;
 import com.linkedpipes.etl.storage.template.store.StoreException;
-import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
-import com.linkedpipes.etl.storage.template.store.TemplateStoreFactory;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,13 +26,17 @@ class TemplateService {
 
     private final TemplateEventListener listener;
 
+    private final RootTemplateSource rootSource;
+
     private TemplateStore store;
 
     public TemplateService(
             Configuration configuration,
-            TemplateEventListener listener) {
+            TemplateEventListener listener,
+            RootTemplateSource rootSource) {
         this.configuration = configuration;
         this.listener = listener;
+        this.rootSource = rootSource;
     }
 
     public void initialize() throws BaseException {
@@ -87,16 +83,16 @@ class TemplateService {
         String id = store.reserveIdentifier();
         String iri = configuration.getDomainName()
                 + "/resources/components/" + id;
-        ReferenceContainerFactory factory = new ReferenceContainerFactory();
+        ReferenceContainerFactory factory =
+                new ReferenceContainerFactory(rootSource);
         try {
             ReferenceContainer container = factory.create(
                     id, iri, definitionStatements, configurationStatements);
             ReferenceTemplate referenceTemplate =
                     new ReferenceTemplate(container);
-            referenceTemplate.setCorePlugin(
-                    referenceTemplate.getCorePlugin());
+            referenceTemplate.setRootPluginTemplate(
+                    referenceTemplate.getRootPluginTemplate());
             listener.onReferenceTemplateLoaded(container);
-            ;
             return referenceTemplate;
         } catch (BaseException ex) {
             store.removeReference(id);

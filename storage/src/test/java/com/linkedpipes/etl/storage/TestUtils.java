@@ -86,7 +86,11 @@ public class TestUtils {
                 if (actualSet.contains(statement)) {
                     continue;
                 }
-                System.out.println("- " + statement);
+                System.out.println(
+                        "- [" + statement.getContext() + "] "
+                                + statement.getSubject() + " "
+                                + statement.getPredicate() + " "
+                                + statement.getObject());
                 missingCount += 1;
             }
             System.out.println("Extra:");
@@ -95,7 +99,11 @@ public class TestUtils {
                 if (expectedSet.contains(statement)) {
                     continue;
                 }
-                System.out.println("+ " + statement);
+                System.out.println(
+                        "+ [" + statement.getContext() + "] "
+                                + statement.getSubject() + " "
+                                + statement.getPredicate() + " "
+                                + statement.getObject());
                 extraCount += 1;
             }
             System.out.println("Size expected: " + expectedSet.size()

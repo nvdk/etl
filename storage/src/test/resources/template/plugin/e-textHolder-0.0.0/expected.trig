@@ -55,15 +55,15 @@
 <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description>
     a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
     config:type textHolder:Configuration ;
-    config:member <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/fileName>,
-        <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/content> .
+    config:member <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/1>,
+        <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/2> .
 
-<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/fileName>
+<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/1>
     a config:ConfigurationMember ;
     config:property textHolder:fileName ;
     config:control textHolder:fileNameControl .
 
-<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/content>
+<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/2>
     a config:ConfigurationMember ;
     config:property textHolder:content ;
     config:control textHolder:contentControl .

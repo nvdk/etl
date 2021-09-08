@@ -109,7 +109,7 @@ public class ComponentServlet {
             HttpServletRequest request, HttpServletResponse response)
             throws BaseException {
         Template template = getTemplate(iri);
-        RdfUtils.write(request, response, templateFacade.getConfig(template));
+        RdfUtils.write(request, response, templateFacade.getConfiguration(template));
     }
 
     @RequestMapping(value = "/config", method = RequestMethod.POST)
@@ -119,7 +119,7 @@ public class ComponentServlet {
             @RequestParam(name = "configuration") MultipartFile configRdf)
             throws BaseException {
         Template template = getTemplate(iri);
-        templateFacade.updateConfig(template, RdfUtils.read(configRdf));
+        templateFacade.updateConfiguration(template, RdfUtils.read(configRdf));
     }
 
     @RequestMapping(value = "/configEffective", method = RequestMethod.GET)
@@ -130,7 +130,7 @@ public class ComponentServlet {
             throws BaseException, InvalidConfiguration {
         Template template = getTemplate(iri);
         RdfUtils.write(
-                request, response, templateFacade.getConfigEffective(template));
+                request, response, templateFacade.getEffectiveConfiguration(template));
     }
 
     @RequestMapping(value = "/configTemplate", method = RequestMethod.GET)
@@ -141,7 +141,7 @@ public class ComponentServlet {
             throws BaseException, InvalidConfiguration {
         Template template = getTemplate(iri);
         RdfUtils.write(
-                request, response, templateFacade.getConfigInstance(template));
+                request, response, templateFacade.getInstanceConfiguration(template));
     }
 
     @RequestMapping(value = "/configDescription", method = RequestMethod.GET)
@@ -153,7 +153,7 @@ public class ComponentServlet {
         Template template = getTemplate(iri);
         RdfUtils.write(
                 request, response,
-                templateFacade.getConfigDescription(template));
+                templateFacade.getConfigurationDescription(template));
     }
 
     @RequestMapping(value = "/dialog",

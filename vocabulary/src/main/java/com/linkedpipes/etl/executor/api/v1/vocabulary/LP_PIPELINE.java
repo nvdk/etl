@@ -20,8 +20,6 @@ public final class LP_PIPELINE {
 
     public static final String HAS_PROFILE = PREFIX + "profile";
 
-    public static final String HAS_VERSION = PREFIX + "version";
-
     public static final String EXECUTION_METADATA =
             PREFIX + "ExecutionMetadata";
 

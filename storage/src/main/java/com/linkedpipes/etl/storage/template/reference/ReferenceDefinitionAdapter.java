@@ -28,11 +28,13 @@ public class ReferenceDefinitionAdapter {
         for (Statement statement :
                 statements.select(resource, (IRI) null, null)) {
             Value value = statement.getObject();
-            switch (statement.getPredicate().stringValue()) {
+            var predicate = statement.getPredicate().stringValue();
+            switch (predicate) {
                 case LP_PIPELINE.HAS_TEMPLATE:
                     if (value instanceof IRI) {
                         result.template = (IRI) value;
                     }
+                    break;
                 case SKOS.PREF_LABEL:
                     if (value instanceof Literal) {
                         result.prefLabel = (Literal) value;
@@ -60,18 +62,22 @@ public class ReferenceDefinitionAdapter {
                     if (value instanceof IRI) {
                         result.knownAs = (IRI) value;
                     }
+                    break;
                 case LP_PIPELINE.HAS_ROOT:
                     if (value instanceof IRI) {
                         result.root = (IRI) value;
                     }
+                    break;
                 case LP_PIPELINE.HAS_CONFIGURATION_GRAPH:
                     if (value instanceof IRI) {
                         result.configurationGraph = (IRI) value;
                     }
+                    break;
                 case LP.HAS_VERSION:
                     if (value instanceof Literal) {
                         result.version = (Literal) value;
                     }
+                    break;
             }
         }
         return result;
@@ -79,7 +85,6 @@ public class ReferenceDefinitionAdapter {
 
     public static Statements asStatements(ReferenceDefinition definition) {
         Statements result = Statements.arrayList();
-        result.withGraph(definition.resource);
         Resource resource = definition.resource;
         result.addIri(resource, RDF.TYPE, LP_PIPELINE.REFERENCE_TEMPLATE);
         result.add(resource, LP_PIPELINE.HAS_TEMPLATE, definition.template);
@@ -102,10 +107,11 @@ public class ReferenceDefinitionAdapter {
             result.add(resource, LP_PIPELINE.HAS_KNOWN_AS, definition.knownAs);
         }
         result.add(resource, LP_PIPELINE.HAS_ROOT, definition.root);
+        result.add(resource, LP.HAS_VERSION, definition.version);
         result.add(
                 resource, LP_PIPELINE.HAS_CONFIGURATION_GRAPH,
                 definition.configurationGraph);
-        return result;
+        return result.withGraph(definition.resource);
     }
 
 }

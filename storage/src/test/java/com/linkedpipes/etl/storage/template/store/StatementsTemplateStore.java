@@ -11,13 +11,13 @@ import java.util.Set;
 /**
  * Memory store for statements used fot testing.
  */
-public class StatementsStore implements TemplateStore {
+public class StatementsTemplateStore implements TemplateStore {
 
-    Model model = new LinkedHashModel();
+    private final Model model = new LinkedHashModel();
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException();
+        return "statements-template-store";
     }
 
     @Override

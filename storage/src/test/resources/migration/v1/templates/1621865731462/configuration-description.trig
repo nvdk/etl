@@ -1,0 +1,18 @@
+
+<http://localhost:8080/resources/components/1621865731462/configuration> {
+	<http://localhost:8080/resources/components/1621865731462/configuration/desc/3> a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/type> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/member> <http://localhost:8080/resources/components/1621865731462/configuration/desc/1> , <http://localhost:8080/resources/components/1621865731462/configuration/desc/2> , <http://localhost:8080/resources/components/1621865731462/configuration/desc/0> .
+	
+	<http://localhost:8080/resources/components/1621865731462/configuration/desc/1> a <http://plugins.linkedpipes.com/ontology/configuration/ConfigurationMember> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/property> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/control> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> .
+	
+	<http://localhost:8080/resources/components/1621865731462/configuration/desc/2> a <http://plugins.linkedpipes.com/ontology/configuration/ConfigurationMember> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/property> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#threads> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/control> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#threadsControl> .
+	
+	<http://localhost:8080/resources/components/1621865731462/configuration/desc/0> a <http://plugins.linkedpipes.com/ontology/configuration/ConfigurationMember> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/property> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplication> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/control> <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplicationControl> .
+}

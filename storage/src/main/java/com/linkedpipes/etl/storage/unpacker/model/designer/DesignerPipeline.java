@@ -1,6 +1,7 @@
 package com.linkedpipes.etl.storage.unpacker.model.designer;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
+import com.linkedpipes.etl.model.vocabulary.LP;
 import com.linkedpipes.etl.rdf.utils.RdfUtilsException;
 import com.linkedpipes.etl.rdf.utils.model.BackendRdfValue;
 import com.linkedpipes.etl.rdf.utils.pojo.Loadable;
@@ -44,7 +45,7 @@ public class DesignerPipeline implements Loadable {
             case SKOS.PREF_LABEL:
                 label = value.asString();
                 return null;
-            case LP_PIPELINE.HAS_VERSION:
+            case LP.HAS_VERSION:
                 version = (int) value.asLong();
                 return null;
             default:

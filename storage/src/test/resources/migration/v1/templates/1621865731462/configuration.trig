@@ -1,0 +1,9 @@
+
+<http://localhost:8080/configuration> {
+	<http://localhost:8080/resources/components/1621865731462> a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplication> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplicationControl> <http://plugins.linkedpipes.com/resource/configuration/None> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}" ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/None> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#threadsControl> <http://plugins.linkedpipes.com/resource/configuration/None> .
+}

@@ -16,8 +16,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +41,8 @@ public class TemplateFacade implements TemplateSource {
         TemplateEventNotifier notifier = new TemplateEventNotifier();
         notifier.addListener(this.pluginList);
         notifier.addListener(this.templateList);
-        this.templateService = new TemplateService(configuration, notifier);
+        this.templateService = new TemplateService(
+                configuration, notifier, templateList);
     }
 
     @PostConstruct
@@ -97,20 +96,20 @@ public class TemplateFacade implements TemplateSource {
      * Return template config for execution or as merged parent configuration.
      * Configuration of all ancestors are applied.
      */
-    public Collection<Statement> getConfigEffective(Template template)
+    public Collection<Statement> getEffectiveConfiguration(Template template)
             throws BaseException, InvalidConfiguration {
         if (template.isPluginTemplate()
                 && ((PluginTemplate)template).isSupportControl()) {
             // For template without inheritance control, the current
             // configuration is the effective one.
-            return getConfig(template);
+            return getConfiguration(template);
         }
         List<Statement> description =
-                (new Statements(getConfigDescription(template))).asList();
+                (new Statements(getConfigurationDescription(template))).asList();
         SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
         List<List<Statement>> configurations = new ArrayList<>();
         for (Template item : getAncestors(template)) {
-            configurations.add(new ArrayList<>(getConfig(item)));
+            configurations.add(new ArrayList<>(getConfiguration(item)));
         }
 
         return (new ConfigurationFacade()).merge(
@@ -123,7 +122,7 @@ public class TemplateFacade implements TemplateSource {
     /**
      * Return configuration of given template for a dialog.
      */
-    public Collection<Statement> getConfig(Template template)
+    public Collection<Statement> getConfiguration(Template template)
             throws BaseException {
         return templateService.getConfiguration(template);
     }
@@ -131,7 +130,7 @@ public class TemplateFacade implements TemplateSource {
     /**
      * Return configuration for instances of given template.
      */
-    public Collection<Statement> getConfigInstance(Template template)
+    public Collection<Statement> getInstanceConfiguration(Template template)
             throws BaseException, InvalidConfiguration {
         ValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI graph = valueFactory.createIRI(template.getIri() + "/new");
@@ -140,13 +139,13 @@ public class TemplateFacade implements TemplateSource {
         if (template.isPluginTemplate()) {
             return (new ConfigurationFacade()).createNewFromJarFile(
                     configuration,
-                    getConfigDescription(template),
+                    getConfigurationDescription(template),
                     graph.stringValue(),
                     graph);
         } else if (template.isReferenceTemplate()) {
             return (new ConfigurationFacade()).createNewFromTemplate(
                     configuration,
-                    getConfigDescription(template),
+                    getConfigurationDescription(template),
                     graph.stringValue(),
                     graph);
         } else {
@@ -155,7 +154,7 @@ public class TemplateFacade implements TemplateSource {
         }
     }
 
-    public List<Statement> getConfigDescription(Template template)
+    public List<Statement> getConfigurationDescription(Template template)
             throws BaseException {
         Template root = getRootTemplate(template);
         if (!root.isPluginTemplate()) {
@@ -192,7 +191,7 @@ public class TemplateFacade implements TemplateSource {
         templateService.updateReferenceTemplate(template, statements);
     }
 
-    public void updateConfig(
+    public void updateConfiguration(
             Template template, Collection<Statement> statements)
             throws BaseException {
         templateService.updateReferenceConfiguration(template, statements);
@@ -212,6 +211,8 @@ public class TemplateFacade implements TemplateSource {
         return pluginList.getPluginJarFile(iri);
     }
 
+    // TemplateSource
+
     @Override
     public Collection<Statement> getDefinition(String iri)
             throws BaseException {
@@ -222,13 +223,13 @@ public class TemplateFacade implements TemplateSource {
     @Override
     public Collection<Statement> getConfiguration(String iri)
             throws BaseException {
-        return getConfig(getTemplate(iri));
+        return getConfiguration(getTemplate(iri));
     }
 
     @Override
     public Collection<Statement> getConfigurationDescription(String iri)
             throws BaseException {
-        return getConfigDescription(getTemplate(iri));
+        return getConfigurationDescription(getTemplate(iri));
     }
 
 }

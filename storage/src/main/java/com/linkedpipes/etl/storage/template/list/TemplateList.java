@@ -2,11 +2,14 @@ package com.linkedpipes.etl.storage.template.list;
 
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateEventListener;
+import com.linkedpipes.etl.storage.template.TemplateException;
 import com.linkedpipes.etl.storage.template.plugin.PluginContainer;
 import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
+import com.linkedpipes.etl.storage.template.reference.RootTemplateSource;
+import org.eclipse.rdf4j.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TemplateList implements TemplateEventListener {
+public class TemplateList implements
+        TemplateEventListener, RootTemplateSource {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(TemplateList.class);
@@ -82,7 +86,7 @@ public class TemplateList implements TemplateEventListener {
             return template;
         } else if (template instanceof ReferenceTemplate) {
             ReferenceTemplate referenceTemplate = (ReferenceTemplate) template;
-            return getTemplate(referenceTemplate.getTemplate());
+            return getTemplate(referenceTemplate.getRootPluginTemplate());
         } else {
             throw new RuntimeException("Unknown component type.");
         }
@@ -160,6 +164,15 @@ public class TemplateList implements TemplateEventListener {
             brothers.add(reference);
         }
         return children;
+    }
+
+    @Override
+    public String getRootTemplate(String iri) throws TemplateException {
+        Template template = getTemplate(iri);
+        if (template == null) {
+            throw new TemplateException("Missing template");
+        }
+        return getRootTemplate(template).getIri();
     }
 
 }

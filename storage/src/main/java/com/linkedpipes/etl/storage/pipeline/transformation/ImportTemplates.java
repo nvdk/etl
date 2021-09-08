@@ -151,7 +151,7 @@ class ImportTemplates {
         Template parent = templateFacade.getParent(local);
         prepareTemplateForImport(remote, parent);
         Collection<Statement> config = remote.getConfiguration();
-        templateFacade.updateConfig(local, config);
+        templateFacade.updateConfiguration(local, config);
     }
 
     private void prepareTemplateForImport(

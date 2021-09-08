@@ -1,0 +1,14 @@
+
+<http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription> {
+	<http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription/0> a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/type> <http://plugins.linkedpipes.com/ontology/e-textHolder#Configuration> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/member> <http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription/1> , <http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription/2> .
+	
+	<http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription/1> a <http://plugins.linkedpipes.com/ontology/configuration/ConfigurationMember> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/property> <http://plugins.linkedpipes.com/ontology/e-textHolder#fileName> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/control> <http://plugins.linkedpipes.com/ontology/e-textHolder#fileNameControl> .
+	
+	<http://localhost:8080/resources/components/1621875215693-45315619-badd-4c3d-8f43-0f3ab961a375/configurationDescription/2> a <http://plugins.linkedpipes.com/ontology/configuration/ConfigurationMember> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/property> <http://plugins.linkedpipes.com/ontology/e-textHolder#content> ;
+		<http://plugins.linkedpipes.com/ontology/configuration/control> <http://plugins.linkedpipes.com/ontology/e-textHolder#contentControl> .
+}

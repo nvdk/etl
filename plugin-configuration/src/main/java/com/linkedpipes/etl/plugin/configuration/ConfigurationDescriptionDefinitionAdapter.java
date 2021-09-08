@@ -133,6 +133,14 @@ public class ConfigurationDescriptionDefinitionAdapter {
                 definition.members) {
             Resource memberResource = valueFactory.createIRI(
                     resource.stringValue() + "/" + ++counter);
+
+            result.add(valueFactory.createStatement(
+                    resource,
+                    valueFactory.createIRI(LP.HAS_MEMBER),
+                    memberResource,
+                    resource
+            ));
+
             writeMember(valueFactory, result, memberResource, resource, member);
         }
         return result;

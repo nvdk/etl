@@ -1,6 +1,7 @@
 package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_PIPELINE;
+import com.linkedpipes.etl.model.vocabulary.LP;
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
 import com.linkedpipes.etl.storage.utils.Statements;
@@ -48,8 +49,7 @@ public class TemplateV4 {
                     iri, LP_PIPELINE.HAS_KNOWN_AS,
                     mappingSource.getMapping(iri));
         }
-        statements.addInt(
-                iri, LP_PIPELINE.HAS_VERSION, 5);
+        statements.addInt(iri, LP.HAS_VERSION, 5);
         return statements;
     }
 

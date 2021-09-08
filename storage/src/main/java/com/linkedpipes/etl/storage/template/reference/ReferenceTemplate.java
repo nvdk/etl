@@ -10,7 +10,7 @@ public class ReferenceTemplate extends Template {
 
     private final String template;
 
-    private String corePlugin;
+    private String rootPluginTemplate;
 
     public ReferenceTemplate(
             String identifier,ReferenceDefinition definition) {
@@ -27,16 +27,12 @@ public class ReferenceTemplate extends Template {
         return template;
     }
 
-    public String getPluginTemplate() {
-        return corePlugin;
+    public void setRootPluginTemplate(String rootPluginTemplate) {
+        this.rootPluginTemplate = rootPluginTemplate;
     }
 
-    public void setCorePlugin(String corePlugin) {
-        this.corePlugin = corePlugin;
-    }
-
-    public String getCorePlugin() {
-        return corePlugin;
+    public String getRootPluginTemplate() {
+        return rootPluginTemplate;
     }
 
     @Override

@@ -65,7 +65,7 @@ class ExportPipeline {
             templateRdf.addAll(templatesFacade.getInterface(template));
             templateRdf.addAll(templatesFacade.getDefinition(template));
             output.addAll(templateRdf);
-            output.addAll(templatesFacade.getConfig(template));
+            output.addAll(templatesFacade.getConfiguration(template));
         }
         return output;
     }
