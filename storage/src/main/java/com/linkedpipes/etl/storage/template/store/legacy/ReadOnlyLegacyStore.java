@@ -29,11 +29,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class LegacyStore implements TemplateStore {
+/**
+ * This store is read only as it should not be used by the current
+ * version. It is there only to support migration from older versions.
+ *
+ * Unlike other stores the legacy store does not utilize IRI but rather
+ * an internal identification.
+ */
+public class ReadOnlyLegacyStore implements TemplateStore {
 
     public static final String STORE_NAME = "legacy";
-
-    private static final int REFERENCE_CREATE_ATTEMPT = 32;
 
     private static final String INTERFACE = "interface";
 
@@ -46,9 +51,7 @@ public class LegacyStore implements TemplateStore {
 
     private final File directory;
 
-    private final Base64.Encoder encoder = Base64.getEncoder();
-
-    public LegacyStore(File directory) {
+    public ReadOnlyLegacyStore(File directory) {
         this.directory = directory;
     }
 
@@ -66,7 +69,7 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public List<String> getReferenceIdentifiers() {
+    public List<String> getReferencesIri() {
         return listDirectories().stream()
                 .filter(File::isDirectory)
                 .map(File::getName)
@@ -75,25 +78,13 @@ public class LegacyStore implements TemplateStore {
     }
 
     @Override
-    public String reserveIdentifier() throws StoreException {
-        for (int i = 0; i < REFERENCE_CREATE_ATTEMPT; ++i) {
-            String id = createId();
-            File path = getDirectory(id);
-            if (path.mkdir()) {
-                return id;
-            }
-        }
-        throw new StoreException("Can not create directory in: {}", directory);
-    }
-
-    protected String createId() {
-        return (new Date()).getTime() + "-" + UUID.randomUUID();
+    public String reserveIri(String domain) throws StoreException {
+        throw new StoreException("Operation is not supported");
     }
 
     protected File getDirectory(String id) {
         return new File(directory, id);
     }
-
 
     @Override
     public List<Statement> getPluginDefinition(String id)
@@ -124,25 +115,7 @@ public class LegacyStore implements TemplateStore {
             Collection<Statement> configuration,
             Collection<Statement> configurationDescription)
             throws StoreException {
-        saveStatements(
-                id, DEFINITION, definition);
-        saveStatements(
-                id, CONFIGURATION, configuration);
-        saveStatements(
-                id, CONFIGURATION_DESCRIPTION, configurationDescription);
-    }
-
-    protected void saveStatements(
-            String id, String fileName, Collection<Statement> statements)
-            throws StoreException {
-        File directory = getDirectory(id);
-        directory.mkdirs();
-        File file = new File(directory, fileName + ".trig");
-        try (OutputStream stream = new FileOutputStream(file)) {
-            Rio.write(statements, stream, RDFFormat.TRIG);
-        } catch (IOException | RuntimeException ex) {
-            throw new StoreException("Can't write file.", ex);
-        }
+        throw new StoreException("Operation is not supported");
     }
 
     @Override
@@ -158,7 +131,7 @@ public class LegacyStore implements TemplateStore {
     public void setReferenceDefinition(
             String id, Collection<Statement> statements)
             throws StoreException {
-        saveStatements(id, DEFINITION, statements);
+        throw new StoreException("Operation is not supported");
     }
 
     @Override
@@ -177,7 +150,7 @@ public class LegacyStore implements TemplateStore {
     public void setReferenceConfiguration(
             String id, Collection<Statement> statements)
             throws StoreException {
-        saveStatements(id, CONFIGURATION, statements);
+        throw new StoreException("Operation is not supported");
     }
 
     @Override
@@ -204,21 +177,12 @@ public class LegacyStore implements TemplateStore {
     @Override
     public void setPluginFile(String id, String path, byte[] content)
             throws StoreException {
-        Path pathToFile = getFilePath(id, path);
-        pathToFile.getParent().toFile().mkdirs();
-        try {
-            Files.write(pathToFile, content);
-        } catch (IOException ex) {
-            throw new StoreException("Can't read file.", ex);
-        }
+        throw new StoreException("Operation is not supported");
     }
 
     @Override
     public void removeReference(String id) throws StoreException {
-        File dir = getDirectory(id);
-        if (!FileUtils.deleteQuietly(dir)) {
-            throw new StoreException("Can't delete directory with template");
-        }
+        throw new StoreException("Operation is not supported");
     }
 
 }

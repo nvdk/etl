@@ -47,34 +47,34 @@ public class CachedStoreV1 implements TemplateStore {
     }
 
     @Override
-    public List<String> getReferenceIdentifiers() {
-        return store.getReferenceIdentifiers();
+    public List<String> getReferencesIri() {
+        return store.getReferencesIri();
     }
 
     @Override
-    public String reserveIdentifier() throws StoreException {
-        return store.reserveIdentifier();
+    public String reserveIri(String domain) throws StoreException {
+        return store.reserveIri(domain);
     }
 
     @Override
     public List<Statement> getPluginDefinition(
-            String id) throws StoreException {
-        return getPluginData(id).definition;
+            String iri) throws StoreException {
+        return getPluginData(iri).definition;
     }
 
     /**
      * Plugin templates are saved only in main memory.
      */
-    protected TemplateData getPluginData(String id) throws StoreException {
-        if (cache.containsKey(id)) {
-            return cache.get(id);
+    protected TemplateData getPluginData(String iri) throws StoreException {
+        if (cache.containsKey(iri)) {
+            return cache.get(iri);
         }
         throw new StoreException("Missing plugin template");
     }
 
     @Override
     public void setPlugin(
-            String id,
+            String iri,
             Collection<Statement> definition,
             Collection<Statement> configuration,
             Collection<Statement> configurationDescription) {
@@ -85,77 +85,79 @@ public class CachedStoreV1 implements TemplateStore {
                 new ArrayList<>(configuration);
         templateData.configurationDescription =
                 new ArrayList<>(configurationDescription);
-        cache.put(id, templateData);
+        cache.put(iri, templateData);
     }
 
     @Override
     public List<Statement> getReferenceDefinition(
-            String id) throws StoreException {
-        loadReferenceToCache(id);
-        return cache.get(id).definition;
+            String iri) throws StoreException {
+        loadReferenceToCache(iri);
+        return cache.get(iri).definition;
     }
 
-    protected void loadReferenceToCache(String id) throws StoreException {
-        if (cache.containsKey(id)) {
+    protected void loadReferenceToCache(String iri) throws StoreException {
+        if (cache.containsKey(iri)) {
             return;
         }
         TemplateData result = new TemplateData();
-        result.definition = store.getReferenceDefinition(id);
-        result.configuration = store.getReferenceConfiguration(id);
-        cache.put(id, result);
+        result.definition = store.getReferenceDefinition(iri);
+        result.configuration = store.getReferenceConfiguration(iri);
+        cache.put(iri, result);
     }
 
     @Override
     public void setReferenceDefinition(
-            String id, Collection<Statement> statements) throws StoreException {
-        store.setReferenceDefinition(id, statements);
-        loadReferenceToCache(id);
-        cache.get(id).definition = new ArrayList<>(statements);
+            String iri, Collection<Statement> statements)
+            throws StoreException {
+        store.setReferenceDefinition(iri, statements);
+        loadReferenceToCache(iri);
+        cache.get(iri).definition = new ArrayList<>(statements);
     }
 
     @Override
     public List<Statement> getPluginConfiguration(
-            String id) throws StoreException {
-        return getPluginData(id).configuration;
+            String iri) throws StoreException {
+        return getPluginData(iri).configuration;
     }
 
     @Override
     public List<Statement> getReferenceConfiguration(
-            String id) throws StoreException {
-        loadReferenceToCache(id);
-        return cache.get(id).configuration;
+            String iri) throws StoreException {
+        loadReferenceToCache(iri);
+        return cache.get(iri).configuration;
     }
 
     @Override
     public void setReferenceConfiguration(
-            String id, Collection<Statement> statements
-    ) throws StoreException {
-        store.setReferenceConfiguration(id, statements);
-        loadReferenceToCache(id);
-        cache.get(id).configuration = new ArrayList<>(statements);
+            String iri, Collection<Statement> statements)
+            throws StoreException {
+        store.setReferenceConfiguration(iri, statements);
+        loadReferenceToCache(iri);
+        cache.get(iri).configuration = new ArrayList<>(statements);
     }
 
     @Override
     public List<Statement> getPluginConfigurationDescription(
-            String id) throws StoreException {
-        return getPluginData(id).configurationDescription;
+            String iri) throws StoreException {
+        return getPluginData(iri).configurationDescription;
     }
 
     @Override
-    public byte[] getPluginFile(String id, String path) throws StoreException {
-        return getPluginData(id).files.get(path);
+    public byte[] getPluginFile(
+            String iri, String path) throws StoreException {
+        return getPluginData(iri).files.get(path);
     }
 
     @Override
     public void setPluginFile(
-            String id, String path, byte[] content) throws StoreException {
-        getPluginData(id).files.put(path, content);
+            String iri, String path, byte[] content) throws StoreException {
+        getPluginData(iri).files.put(path, content);
     }
 
     @Override
-    public void removeReference(String id) throws StoreException {
-        cache.remove(id);
-        store.removeReference(id);
+    public void removeReference(String iri) throws StoreException {
+        cache.remove(iri);
+        store.removeReference(iri);
     }
 
 }

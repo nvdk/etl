@@ -1,0 +1,25 @@
+# Have a template with the same owl:sameAs as in the "pipeline-v5.trig" file.
+# Just with changed configuration.
+
+@prefix lp: <http://linkedpipes.com/ontology/> .
+@prefix etl: <http://etl.linkedpipes.com/ontology/> .
+@prefix control: <http://plugins.linkedpipes.com/resource/configuration/> .
+@prefix eTextHolder: <http://plugins.linkedpipes.com/ontology/e-textHolder#> .
+
+<http://example.com/components/xxx> {
+	<http://example.com/components/xxx> a lp:Template ;
+	    lp:template <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> ;
+	    <http://www.w3.org/2004/02/skos/core#prefLabel> "Turtle holder" ;
+	    lp:root <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> ;
+	    etl:version "5"^^<http://www.w3.org/2001/XMLSchema#int> ;
+		lp:configurationGraph <http://example.com/components/xxx/configuration> ;
+		<http://www.w3.org/2002/07/owl#sameAs> <http://linkedpipes.com/1> .
+}
+
+<http://example.com/components/xxx/configuration> {
+	<http://example.com/components/xxx/configuration> a eTextHolder:Configuration ;
+		eTextHolder:content "<http:// ..." ;
+		eTextHolder:contentControl control:None ;
+		eTextHolder:fileName "file.ttl" ;
+		eTextHolder:fileNameControl control:Force .
+}

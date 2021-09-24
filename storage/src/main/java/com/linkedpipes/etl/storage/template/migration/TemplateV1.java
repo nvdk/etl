@@ -59,9 +59,9 @@ class TemplateV1 {
                 new Mapping("t-tabular", "t-tabularChunked"));
     }
 
-    protected final TemplateInformation.RootSource rootSource;
+    protected final MigrationSources.RootSource rootSource;
 
-    public TemplateV1(TemplateInformation.RootSource rootSource) {
+    public TemplateV1(MigrationSources.RootSource rootSource) {
         this.rootSource = rootSource;
     }
 
@@ -129,12 +129,6 @@ class TemplateV1 {
     public static Resource loadParent(
             Resource resource, Statements statements) {
         return TemplateV0.loadParent(resource, statements);
-    }
-
-    public static Integer loadVersion(
-            Resource resource, Statements statements) {
-        // There was no information about version.
-        return null;
     }
 
     public static Resource loadConfiguration(

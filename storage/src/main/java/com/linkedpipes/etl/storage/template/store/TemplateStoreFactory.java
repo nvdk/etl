@@ -2,7 +2,7 @@ package com.linkedpipes.etl.storage.template.store;
 
 import com.linkedpipes.etl.storage.template.store.cached.CachedStoreV1;
 import com.linkedpipes.etl.storage.template.store.file.FileStoreV1;
-import com.linkedpipes.etl.storage.template.store.legacy.LegacyStore;
+import com.linkedpipes.etl.storage.template.store.legacy.ReadOnlyLegacyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +27,13 @@ public class TemplateStoreFactory {
             // it using legacy template.
             String name = "v" + info.templateVersion + "-backup";
             migrateToLegacyRepository(name);
-            return new LegacyStore(new File(getTemplatesDirectory(), name));
+            return new ReadOnlyLegacyStore(
+                    new File(getTemplatesDirectory(), name));
         }
         File directory = getTemplatesStoreDirectory(info);
         switch (info.repository) {
-            case LegacyStore.STORE_NAME:
-                return new LegacyStore(directory);
+            case ReadOnlyLegacyStore.STORE_NAME:
+                return new ReadOnlyLegacyStore(directory);
             case FileStoreV1.STORE_NAME:
                 return new FileStoreV1(directory);
             case CachedStoreV1.STORE_NAME:

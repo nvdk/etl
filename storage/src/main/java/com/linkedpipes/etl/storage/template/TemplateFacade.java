@@ -41,8 +41,7 @@ public class TemplateFacade implements TemplateSource {
         TemplateEventNotifier notifier = new TemplateEventNotifier();
         notifier.addListener(this.pluginList);
         notifier.addListener(this.templateList);
-        this.templateService = new TemplateService(
-                configuration, notifier, templateList);
+        this.templateService = new TemplateService(configuration, notifier);
     }
 
     @PostConstruct
@@ -149,8 +148,8 @@ public class TemplateFacade implements TemplateSource {
                     graph.stringValue(),
                     graph);
         } else {
-            throw new BaseException("Unknown template type: {}",
-                    template.getId());
+            throw new BaseException(
+                    "Unknown template type: {}", template.getIri());
         }
     }
 
@@ -160,7 +159,7 @@ public class TemplateFacade implements TemplateSource {
         if (!root.isPluginTemplate()) {
             throw new BaseException(
                     "Root template '{}' is not a plugin for '{}'",
-                    root.getId(), template.getId());
+                    root.getIri(), template.getIri());
         }
         PluginTemplate pluginTemplate = (PluginTemplate) root;
         return templateService.getConfigurationDescription(pluginTemplate);

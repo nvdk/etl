@@ -36,7 +36,7 @@ public class LoadReferenceTemplates {
     }
 
     protected void loadReferenceTemplates() throws StoreException {
-        for (String identifier : store.getReferenceIdentifiers()) {
+        for (String identifier : store.getReferencesIri()) {
             try {
                 loadReferenceTemplate(identifier);
             } catch (Exception ex) {
@@ -57,7 +57,6 @@ public class LoadReferenceTemplates {
         List<Statement> configurationStatements =
                 store.getReferenceConfiguration(identifier);
         ReferenceContainer container = new ReferenceContainer();
-        container.identifier = identifier;
         container.resource = definition.resource;
         container.definition = definition;
         container.definitionStatements =

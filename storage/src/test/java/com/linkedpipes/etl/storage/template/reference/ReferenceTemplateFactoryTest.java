@@ -2,7 +2,6 @@ package com.linkedpipes.etl.storage.template.reference;
 
 import com.linkedpipes.etl.storage.TestUtils;
 import com.linkedpipes.etl.storage.utils.Statements;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.Test;
 
 public class ReferenceTemplateFactoryTest {
@@ -16,11 +15,10 @@ public class ReferenceTemplateFactoryTest {
         var definition = TestUtils.rdfFromResource(
                 directory + "definition.trig");
 
-        var factory = new ReferenceContainerFactory(
-                resource -> "http://etl.linkedpipes.com/e-textHolder/0.0.0");
+        var factory = new ReferenceContainerFactory();
 
         var container = factory.create(
-                "202004231840", "http://etl.linkedpipes.com/202004231840",
+                "http://etl.linkedpipes.com/202004231840",
                 definition, configuration);
 
         var expected = Statements.wrap(

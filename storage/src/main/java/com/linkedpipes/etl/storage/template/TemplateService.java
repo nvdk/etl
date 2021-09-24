@@ -9,7 +9,6 @@ import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainerFactory;
-import com.linkedpipes.etl.storage.template.reference.RootTemplateSource;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
 import org.eclipse.rdf4j.model.IRI;
@@ -26,17 +25,13 @@ class TemplateService {
 
     private final TemplateEventListener listener;
 
-    private final RootTemplateSource rootSource;
-
     private TemplateStore store;
 
     public TemplateService(
             Configuration configuration,
-            TemplateEventListener listener,
-            RootTemplateSource rootSource) {
+            TemplateEventListener listener) {
         this.configuration = configuration;
         this.listener = listener;
-        this.rootSource = rootSource;
     }
 
     public void initialize() throws BaseException {
@@ -46,56 +41,58 @@ class TemplateService {
     public List<Statement> getDefinition(Template template)
             throws BaseException {
         if (template.isPluginTemplate()) {
-            return store.getPluginDefinition(template.getId());
+            return store.getPluginDefinition(template.getIri());
         } else if (template.isReferenceTemplate()) {
-            return store.getReferenceDefinition(template.getId());
+            return store.getReferenceDefinition(template.getIri());
         } else {
-            throw new BaseException("Unknown template: {}", template.getId());
+            throw new BaseException("Unknown template: {}", template.getIri());
         }
     }
 
     public List<Statement> getConfiguration(Template template)
             throws BaseException {
         if (template.isPluginTemplate()) {
-            return store.getPluginConfiguration(template.getId());
+            return store.getPluginConfiguration(template.getIri());
         } else if (template.isReferenceTemplate()) {
-            return store.getReferenceConfiguration(template.getId());
+            return store.getReferenceConfiguration(template.getIri());
         } else {
             throw new BaseException("Unknown template type: {}",
-                    template.getId());
+                    template.getIri());
         }
     }
 
     public List<Statement> getConfigurationDescription(PluginTemplate template)
             throws BaseException {
-        return store.getPluginConfigurationDescription(template.id);
+        return store.getPluginConfigurationDescription(template.getIri());
     }
 
     public byte[] getPluginFile(Template template, String path)
             throws StoreException {
-        return store.getPluginFile(template.getId(), path);
+        return store.getPluginFile(template.getIri(), path);
     }
 
     public Template createReferenceTemplate(
             Collection<Statement> definitionStatements,
             Collection<Statement> configurationStatements)
             throws BaseException {
-        String id = store.reserveIdentifier();
-        String iri = configuration.getDomainName()
-                + "/resources/components/" + id;
+        String iri = store.reserveIri(configuration.getDomainName());
         ReferenceContainerFactory factory =
-                new ReferenceContainerFactory(rootSource);
+                new ReferenceContainerFactory();
         try {
             ReferenceContainer container = factory.create(
-                    id, iri, definitionStatements, configurationStatements);
+                    iri, definitionStatements, configurationStatements);
             ReferenceTemplate referenceTemplate =
                     new ReferenceTemplate(container);
             referenceTemplate.setRootPluginTemplate(
                     referenceTemplate.getRootPluginTemplate());
+            // TODO Add validation of the user provided input.
+            store.setReference(iri,
+                    container.definitionStatements,
+                    container.configurationStatements);
             listener.onReferenceTemplateLoaded(container);
             return referenceTemplate;
         } catch (BaseException ex) {
-            store.removeReference(id);
+            store.removeReference(iri);
             throw ex;
         }
     }
@@ -104,20 +101,29 @@ class TemplateService {
             ReferenceTemplate template,
             Collection<Statement> definitionStatements)
             throws BaseException {
-        String id = template.getId();
-        ReferenceDefinition definition = ReferenceDefinitionAdapter.create(
+        String id = template.getIri();
+        ReferenceDefinition oldDefinition = ReferenceDefinitionAdapter.create(
                 store.getReferenceDefinition(id));
+        if (oldDefinition == null) {
+            throw new TemplateException("Can't load old definition.");
+        }
         ReferenceDefinition givenDefinition =
                 ReferenceDefinitionAdapter.create(definitionStatements);
+        if (givenDefinition == null) {
+            throw new TemplateException("Can't load given definition.");
+        }
         ReferenceDefinition newDefinition =
-                updateReferenceTemplateDefinition(definition, givenDefinition);
+                updateReferenceTemplateDefinition(
+                        oldDefinition, givenDefinition);
         store.setReferenceDefinition(
-                id, ReferenceDefinitionAdapter.asStatements(definition));
-        listener.onReferenceTemplateChanged(definition, newDefinition);
+                id, ReferenceDefinitionAdapter.asStatements(oldDefinition));
+        listener.onReferenceTemplateChanged(oldDefinition, newDefinition);
     }
 
     /**
-     * Merge definition, by doing so specify what can be updated.
+     * Merge definition, by doing so specify what can be updated. Also makes
+     * sure that invalid new definition can not break the old one as all the
+     * core attributes are loaded from the old version.
      */
     protected ReferenceDefinition updateReferenceTemplateDefinition(
             ReferenceDefinition oldDefinition,
@@ -145,7 +151,7 @@ class TemplateService {
         IRI graph = valueFactory.createIRI(
                 template.getIri() + "/configuration");
         statements = RdfUtils.forceContext(statements, graph);
-        store.setReferenceConfiguration(template.getId(), statements);
+        store.setReferenceConfiguration(template.getIri(), statements);
         listener.onReferenceTemplateConfigurationChanged(
                 template.getIri(), statements);
     }
@@ -153,7 +159,7 @@ class TemplateService {
     public void removeReference(ReferenceTemplate template)
             throws BaseException {
         listener.onReferenceTemplateDeleted(template.getIri());
-        store.removeReference(template.getId());
+        store.removeReference(template.getIri());
     }
 
 }

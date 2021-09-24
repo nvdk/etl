@@ -1,0 +1,40 @@
+@prefix lp: <http://linkedpipes.com/ontology/> .
+@prefix etl: <http://etl.linkedpipes.com/ontology/> .
+@prefix control: <http://plugins.linkedpipes.com/resource/configuration/> .
+@prefix eTextHolder: <http://plugins.linkedpipes.com/ontology/e-textHolder#> .
+
+<http://localhost:8080/resources/components/2> {
+	<http://localhost:8080/resources/components/2> a lp:Template ;
+	    lp:template <http://localhost:8080/resources/components/1> ;
+	    <http://www.w3.org/2004/02/skos/core#prefLabel> "Type holder" ;
+	    lp:root <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> ;
+	    etl:version "5"^^<http://www.w3.org/2001/XMLSchema#int> ;
+		lp:configurationGraph <http://localhost:8080/resources/components/2/configuration> ;
+		<http://www.w3.org/2002/07/owl#sameAs> <http://example.com/components/1621937467650> .
+}
+
+<http://localhost:8080/resources/components/2/configuration> {
+	<http://localhost:8080/resources/components/2/configuration/0> a eTextHolder:Configuration ;
+		eTextHolder:content "<http://localhost/resource> a <http://localhost/Type> ." ;
+		eTextHolder:contentControl control:Force ;
+		eTextHolder:fileName "" ;
+		eTextHolder:fileNameControl control:None .
+}
+
+<http://localhost:8080/resources/components/1> {
+	<http://localhost:8080/resources/components/1> a lp:Template ;
+	    lp:template <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> ;
+	    <http://www.w3.org/2004/02/skos/core#prefLabel> "Turtle holder" ;
+	    lp:root <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> ;
+	    etl:version "5"^^<http://www.w3.org/2001/XMLSchema#int> ;
+		lp:configurationGraph <http://localhost:8080/resources/components/1/configuration> ;
+		<http://www.w3.org/2002/07/owl#sameAs> <http://linkedpipes.com/1> .
+}
+
+<http://localhost:8080/resources/components/1/configuration> {
+	<http://localhost:8080/resources/components/1/configuration/0> a eTextHolder:Configuration ;
+		eTextHolder:content "" ;
+		eTextHolder:contentControl control:None ;
+		eTextHolder:fileName "file.ttl" ;
+		eTextHolder:fileNameControl control:Force .
+}

@@ -6,56 +6,84 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * The identifiers are not IRIs but for example: jar-e-textHolder-0.0.0.jar
- * or 1622805775578-ff2aa41d-16d7-413f-b44b-99b8902a76ad .
- *
  * All statements must be in a correct graph.
  */
 public interface TemplateStore {
 
+    String COMPONENT_IRI_SUFFIX = "/resources/components/";
+
     String getName();
 
-    List<String> getReferenceIdentifiers() throws StoreException;
+    List<String> getReferencesIri() throws StoreException;
 
-    String reserveIdentifier() throws StoreException;
+    /**
+     * Return new IRI created by suffixing given domain name with
+     * {@link #COMPONENT_IRI_SUFFIX} and a random suffix similar to GUID.
+     */
+    String reserveIri(String domain) throws StoreException;
 
-    List<Statement> getPluginDefinition(String id)
+    List<Statement> getPluginDefinition(String iri)
             throws StoreException;
 
     void setPlugin(
-            String id,
+            String iri,
             Collection<Statement> definition,
             Collection<Statement> configuration,
             Collection<Statement> configurationDescription)
             throws StoreException;
 
-    List<Statement> getReferenceDefinition(String id)
+    /**
+     * Stores may provide custom implementation of this operation.
+     */
+    default void setReference(
+            String iri,
+            Collection<Statement> statements,
+            Collection<Statement> configuration
+    ) throws StoreException {
+        try {
+            setReferenceDefinition(iri, statements);
+            setReferenceConfiguration(iri, configuration);
+        } catch (StoreException ex) {
+            removeReference(iri);
+            throw ex;
+        }
+    }
+
+    List<Statement> getReferenceDefinition(String iri)
             throws StoreException;
 
     void setReferenceDefinition(
-            String id, Collection<Statement> statements)
+            String iri, Collection<Statement> definition)
             throws StoreException;
 
-    List<Statement> getPluginConfiguration(String id)
+    List<Statement> getPluginConfiguration(String iri)
             throws StoreException;
 
-    List<Statement> getReferenceConfiguration(String id)
+    List<Statement> getReferenceConfiguration(String iri)
             throws StoreException;
 
     void setReferenceConfiguration(
-            String id, Collection<Statement> statements)
+            String iri, Collection<Statement> statements)
             throws StoreException;
 
-    List<Statement> getPluginConfigurationDescription(String id)
+    List<Statement> getPluginConfigurationDescription(String iri)
             throws StoreException;
 
     byte[] getPluginFile(
-            String id, String path)
+            String iri, String path)
             throws StoreException;
 
-    void setPluginFile(String id, String path, byte[] content)
+    void setPluginFile(String iri, String path, byte[] content)
             throws StoreException;
 
-    void removeReference(String id) throws StoreException;
+    default void silentRemoveReference(String iri) {
+        try {
+            removeReference(iri);
+        } catch(StoreException ex) {
+            // Ignore the exception.
+        }
+    }
+
+    void removeReference(String iri) throws StoreException;
 
 }

@@ -11,12 +11,12 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class TemplateV4 {
 
-    protected final TemplateInformation.RootSource rootSource;
+    protected final MigrationSources.RootSource rootSource;
 
-    protected final TemplateInformation.MappingSource mappingSource;
+    protected final MigrationSources.MappingSource mappingSource;
 
-    public TemplateV4(TemplateInformation.RootSource rootSource,
-                      TemplateInformation.MappingSource mappingSource) {
+    public TemplateV4(MigrationSources.RootSource rootSource,
+                      MigrationSources.MappingSource mappingSource) {
         this.rootSource = rootSource;
         this.mappingSource = mappingSource;
     }
@@ -56,12 +56,6 @@ public class TemplateV4 {
     public static Resource loadParent(
             Resource resource, Statements statements) {
         return TemplateV0.loadParent(resource, statements);
-    }
-
-    public static Integer loadVersion(
-            Resource resource, Statements statements) {
-        // There was no information about version.
-        return null;
     }
 
     public static Resource loadConfiguration(

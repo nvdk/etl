@@ -42,12 +42,6 @@ class TemplateV2 {
         return TemplateV0.loadParent(resource, statements);
     }
 
-    public static Integer loadVersion(
-            Resource resource, Statements statements) {
-        // There was no information about version.
-        return null;
-    }
-
     public static Resource loadConfiguration(
             Resource resource, Statements statements) {
         return TemplateV0.loadConfiguration(resource, statements);

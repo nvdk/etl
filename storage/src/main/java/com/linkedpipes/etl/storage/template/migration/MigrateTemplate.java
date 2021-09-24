@@ -2,25 +2,25 @@ package com.linkedpipes.etl.storage.template.migration;
 
 import com.linkedpipes.etl.storage.BaseException;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
-import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinitionAdapter;
 
 public class MigrateTemplate {
 
-    protected final TemplateInformation.RootSource rootSource;
+    protected final MigrationSources.RootSource rootSource;
 
-    protected final TemplateInformation.MappingSource mappingSource;
+    protected final MigrationSources.MappingSource mappingSource;
 
     public MigrateTemplate(
-            TemplateInformation.RootSource rootSource,
-            TemplateInformation.MappingSource mappingSource) {
+            MigrationSources.RootSource rootSource,
+            MigrationSources.MappingSource mappingSource) {
         this.rootSource = rootSource;
         this.mappingSource = mappingSource;
     }
 
     /**
      * All migration function must consume and produce the data as statements.
-     * The container.definition should must not be used.
+     * The container.definition should must not be used. The output
+     * container contains synchronized and valid data in all fields.
      */
     public ReferenceContainer migrateReferenceTemplate(
             ReferenceContainer template, int defaultVersion

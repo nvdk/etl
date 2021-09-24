@@ -33,12 +33,6 @@ class TemplateV0 {
         return null;
     }
 
-    public static Integer loadVersion(
-            Resource resource, Statements statements) {
-        // There was no information about version.
-        return null;
-    }
-
     public static Resource loadConfiguration(
             Resource resource, Statements statements) {
         // http://linkedpipes.com/ontology/configurationGraph

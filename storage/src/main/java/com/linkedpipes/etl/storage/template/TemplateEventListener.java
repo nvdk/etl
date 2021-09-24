@@ -18,6 +18,17 @@ public interface TemplateEventListener {
         // Do nothing.
     }
 
+    /**
+     * Called when a new component is created at a runtime.
+     */
+    default void onReferenceTemplateCreated(ReferenceContainer container) {
+        // Do nothing.
+    }
+
+    /**
+     * Called when a a new component is created by loading it
+     * from a store at the start up.
+     */
     default void onReferenceTemplateLoaded(ReferenceContainer container) {
         // Do nothing.
     }

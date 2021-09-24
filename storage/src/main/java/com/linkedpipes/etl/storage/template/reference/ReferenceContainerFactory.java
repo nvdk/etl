@@ -17,14 +17,13 @@ public class ReferenceContainerFactory {
 
     private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    private final RootTemplateSource rootSource;
-
-    public ReferenceContainerFactory(RootTemplateSource rootSource) {
-        this.rootSource = rootSource;
-    }
-
+    /**
+     * Return a container for a template of given IRI with given definition
+     * and configuration. The resources in statements are updated to match
+     * the given IRI.
+     */
     public ReferenceContainer create(
-            String id, String iri,
+            String iri,
             Collection<Statement> definitionStatements,
             Collection<Statement> configurationStatements)
             throws TemplateException {
@@ -33,20 +32,19 @@ public class ReferenceContainerFactory {
         if (definition == null) {
             throw new TemplateException("Missing reference template type.");
         }
+        return create(iri, definition, configurationStatements);
+    }
+
+    public ReferenceContainer create(
+            String iri,
+            ReferenceDefinition definition,
+            Collection<Statement> configurationStatements) {
         definition.resource = valueFactory.createIRI(iri);
         definition.configurationGraph = createConfigurationIri(definition);
-        // Older templates may not have root specified.
-        if (definition.root == null) {
-            String parent = definition.template.stringValue();
-            String root = rootSource.getRootTemplate(parent);
-            if (root != null) {
-                definition.root = valueFactory.createIRI(root);
-            }
-        }
         //
         ReferenceContainer result = new ReferenceContainer();
-        result.identifier = id;
         result.resource = definition.resource;
+        result.definition = definition;
         result.definitionStatements = ReferenceDefinitionAdapter
                 .asStatements(definition).withGraph(iri);
         result.configurationStatements =

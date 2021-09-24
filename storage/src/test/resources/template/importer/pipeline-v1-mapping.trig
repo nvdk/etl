@@ -1,0 +1,46 @@
+
+<http://example.com/pipelines/created-1621865694389> {
+	<http://example.com/pipelines/created-1621865694389> a <http://linkedpipes.com/ontology/Pipeline> ;
+		<http://etl.linkedpipes.com/ontology/version> "1"^^<http://www.w3.org/2001/XMLSchema#int> ;
+		<http://linkedpipes.com/ontology/profile> <http://example.com/pipelines/created-1621865694389/profile/default> ;
+		<http://www.w3.org/2004/02/skos/core#prefLabel> "Pipeline" .
+
+	<http://example.com/pipelines/created-1621865694389/profile/default> a <http://linkedpipes.com/ontology/ExecutionProfile> ;
+		<http://linkedpipes.com/ontology/rdfRepositoryPolicy> <http://linkedpipes.com/ontology/repository/SingleRepository> ;
+		<http://linkedpipes.com/ontology/rdfRepositoryType> <http://linkedpipes.com/ontology/repository/NativeStore> .
+
+	<http://example.com/pipelines/created-1621865694389/components/0ec1db00-6d00-4d8c-85fd-08808ed34173> a <http://linkedpipes.com/ontology/Component> ;
+		<http://linkedpipes.com/ontology/configurationGraph> <http://example.com/pipelines/created-1621865694389/components/0ec1db00-6d00-4d8c-85fd-08808ed34173/configuration> ;
+		<http://linkedpipes.com/ontology/template> <http://example.com/components/1621865731462> ;
+		<http://linkedpipes.com/ontology/x> "240"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+		<http://linkedpipes.com/ontology/y> "120"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+		<http://www.w3.org/2004/02/skos/core#prefLabel> "SPARQL construct chunked" .
+}
+
+<http://example.com/pipelines/created-1621865694389/components/0ec1db00-6d00-4d8c-85fd-08808ed34173/configuration> {
+	<http://etl.linkedpipes.com/components/t-sparqlConstructChunked/0.0.0/new/1> a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplicationControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}" ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#threadsControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<http://example.com/configuration> {
+	<http://example.com/components/1621865731462> a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplication> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#deduplicationControl> <http://plugins.linkedpipes.com/resource/configuration/None> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}" ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/None> ;
+		<http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#threadsControl> <http://plugins.linkedpipes.com/resource/configuration/None> .
+}
+
+<http://example.com/components/1621865731462> {
+	<http://example.com/components/1621865731462> a <http://linkedpipes.com/ontology/Template> ;
+		<http://linkedpipes.com/ontology/template> <http://etl.linkedpipes.com/resources/components/t-sparqlConstructChunked/0.0.0> ;
+		<http://linkedpipes.com/ontology/configurationGraph> <http://example.com/configuration> ;
+		<http://www.w3.org/2004/02/skos/core#prefLabel> "SPARQL construct chunked template" .
+}
+
+<http://etl.linkedpipes.com/resources/plugins/mapping> {
+    <http://demo.elt.linkedpipes.com/component> <http://www.w3.org/2002/07/owl#sameAs> <http://example.com/components/1621865731462> .
+}

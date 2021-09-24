@@ -12,14 +12,13 @@ public class ReferenceTemplate extends Template {
 
     private String rootPluginTemplate;
 
-    public ReferenceTemplate(
-            String identifier,ReferenceDefinition definition) {
-        super(identifier, definition.resource.stringValue());
+    public ReferenceTemplate(ReferenceDefinition definition) {
+        super(definition.resource.stringValue());
         this.template = definition.template.stringValue();
     }
 
     public ReferenceTemplate(ReferenceContainer container) {
-        super(container.identifier, container.resource.stringValue());
+        super(container.resource.stringValue());
         this.template = container.definition.template.stringValue();
     }
 

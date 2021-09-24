@@ -7,7 +7,7 @@ public class PluginTemplate extends Template {
     private final boolean supportControl;
 
     public PluginTemplate(PluginContainer container) {
-        super(container.identifier, container.resource.stringValue());
+        super(container.resource.stringValue());
         PluginDefinition definition = container.definition;
         this.supportControl = definition.supportControl.booleanValue();
     }

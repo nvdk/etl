@@ -39,13 +39,15 @@ public class TemplateReader {
 
     public static Resource readParent(
             Resource resource, Statements statements) {
+        // There is only one representation of the parent.
+        return TemplateV0.loadParent(resource, statements);
+    }
+
+    public static Integer readVersion(
+            Resource resource, Statements statements, Integer defaultValue) {
         return firstNotNull(
-                () -> TemplateV0.loadParent(resource, statements),
-                () -> TemplateV1.loadParent(resource, statements),
-                () -> TemplateV2.loadParent(resource, statements),
-                () -> TemplateV3.loadParent(resource, statements),
-                () -> TemplateV4.loadParent(resource, statements),
-                () -> TemplateV5.loadParent(resource, statements)
+                () -> TemplateV5.loadVersion(resource, statements),
+                () -> defaultValue
         );
     }
 
@@ -60,29 +62,16 @@ public class TemplateReader {
         return null;
     }
 
-    public static Integer readVersion(
-            Resource resource, Statements statements, Integer defaultValue) {
-        return firstNotNull(
-                () -> TemplateV0.loadVersion(resource, statements),
-                () -> TemplateV1.loadVersion(resource, statements),
-                () -> TemplateV2.loadVersion(resource, statements),
-                () -> TemplateV3.loadVersion(resource, statements),
-                () -> TemplateV4.loadVersion(resource, statements),
-                () -> TemplateV5.loadVersion(resource, statements),
-                () -> defaultValue
-        );
-    }
-
     public static Resource readConfiguration(
             Resource resource, Statements statements) {
-        return firstNotNull(
-                () -> TemplateV0.loadConfiguration(resource, statements),
-                () -> TemplateV1.loadConfiguration(resource, statements),
-                () -> TemplateV2.loadConfiguration(resource, statements),
-                () -> TemplateV3.loadConfiguration(resource, statements),
-                () -> TemplateV4.loadConfiguration(resource, statements),
-                () -> TemplateV5.loadConfiguration(resource, statements)
-        );
+        // There is only one representation of the configuration.
+        return TemplateV0.loadConfiguration(resource, statements);
+    }
+
+    public static Resource readKnownAs(
+            Resource resource, Statements statements) {
+        // The known as is supported only from version 5.
+        return TemplateV5.loadKnownAs(resource, statements);
     }
 
 }

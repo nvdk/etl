@@ -2,14 +2,11 @@ package com.linkedpipes.etl.storage.template.list;
 
 import com.linkedpipes.etl.storage.template.Template;
 import com.linkedpipes.etl.storage.template.TemplateEventListener;
-import com.linkedpipes.etl.storage.template.TemplateException;
 import com.linkedpipes.etl.storage.template.plugin.PluginContainer;
 import com.linkedpipes.etl.storage.template.plugin.PluginTemplate;
 import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
 import com.linkedpipes.etl.storage.template.reference.ReferenceDefinition;
 import com.linkedpipes.etl.storage.template.reference.ReferenceTemplate;
-import com.linkedpipes.etl.storage.template.reference.RootTemplateSource;
-import org.eclipse.rdf4j.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TemplateList implements
-        TemplateEventListener, RootTemplateSource {
+public class TemplateList implements TemplateEventListener {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(TemplateList.class);
@@ -38,10 +34,18 @@ public class TemplateList implements
     }
 
     @Override
+    public void onReferenceTemplateCreated(ReferenceContainer container) {
+        String iri = container.resource.stringValue();
+        ReferenceTemplate template =
+                new ReferenceTemplate(container.definition);
+        templates.put(iri, template);
+    }
+
+    @Override
     public void onReferenceTemplateLoaded(ReferenceContainer container) {
         String iri = container.resource.stringValue();
-        ReferenceTemplate template = new ReferenceTemplate(
-                container.identifier, container.definition);
+        ReferenceTemplate template =
+                new ReferenceTemplate(container.definition);
         templates.put(iri, template);
     }
 
@@ -55,8 +59,7 @@ public class TemplateList implements
             LOG.error("Missing template to update '{}'.", iri);
             return;
         }
-        ReferenceTemplate template = new ReferenceTemplate(
-                oldTemplate.getId(), newDefinition);
+        ReferenceTemplate template = new ReferenceTemplate(newDefinition);
         templates.put(iri, template);
     }
 
@@ -115,8 +118,8 @@ public class TemplateList implements
                     break;
                 }
             } else {
-                throw new RuntimeException("Unknown template type: "
-                        + template.getId());
+                throw new RuntimeException(
+                        "Unknown template type: " + template.getIri());
             }
         }
         return output;
@@ -132,9 +135,8 @@ public class TemplateList implements
     public Collection<Template> getSuccessors(Template template) {
         Map<Template, List<Template>> children = buildChildrenIndex();
         Set<Template> output = new HashSet<>();
-        Set<Template> toTest = new HashSet<>();
-        toTest.addAll(children.getOrDefault(
-                template, Collections.EMPTY_LIST));
+        Set<Template> toTest = new HashSet<>(
+                children.getOrDefault(template, Collections.emptyList()));
         while (!toTest.isEmpty()) {
             Template item = toTest.iterator().next();
             toTest.remove(item);
@@ -142,7 +144,7 @@ public class TemplateList implements
                 continue;
             }
             List<Template> itemChildren = children.getOrDefault(
-                    item, Collections.EMPTY_LIST);
+                    item, Collections.emptyList());
             output.add(item);
             output.addAll(itemChildren);
             toTest.addAll(itemChildren);
@@ -164,15 +166,6 @@ public class TemplateList implements
             brothers.add(reference);
         }
         return children;
-    }
-
-    @Override
-    public String getRootTemplate(String iri) throws TemplateException {
-        Template template = getTemplate(iri);
-        if (template == null) {
-            throw new TemplateException("Missing template");
-        }
-        return getRootTemplate(template).getIri();
     }
 
 }

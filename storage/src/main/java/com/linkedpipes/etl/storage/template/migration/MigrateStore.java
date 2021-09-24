@@ -5,7 +5,6 @@ import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
 import com.linkedpipes.etl.storage.template.store.StoreException;
 import com.linkedpipes.etl.storage.template.store.StoreInfo;
 import com.linkedpipes.etl.storage.template.store.TemplateStore;
-import com.linkedpipes.etl.storage.template.store.TemplateStoreFactory;
 import com.linkedpipes.etl.storage.utils.Statements;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
@@ -56,8 +55,8 @@ public class MigrateStore {
         if (sourceInfo.templateVersion < 5) {
             migrateMapping();
         }
-        for (String reference : source.getReferenceIdentifiers()) {
-            migrateReference(reference);
+        for (String iri : source.getReferencesIri()) {
+            migrateReference(iri);
         }
         LOG.info("Migrating store from {} : {} to {} : {} ... done",
                 source.getName(), sourceInfo.templateVersion,
@@ -70,7 +69,7 @@ public class MigrateStore {
      */
     protected void loadRoots() throws BaseException {
         Map<String, String> parents = new HashMap<>();
-        for (String id : source.getReferenceIdentifiers()) {
+        for (String id : source.getReferencesIri()) {
             Statements statements = Statements.wrap(
                     source.getReferenceDefinition(id));
             Resource resource = TemplateReader.readResource(statements);
@@ -136,29 +135,32 @@ public class MigrateStore {
                 });
     }
 
-    protected void migrateReference(String id) throws BaseException {
-        ReferenceContainer container = loadReferenceToContainer(id);
+    protected void migrateReference(String iri) throws BaseException {
+        ReferenceContainer container = loadReferenceToContainer(iri);
         int version = sourceInfo.templateVersion;
         MigrateTemplate migrateTemplate = new MigrateTemplate(
                 roots::get, mappings::get);
         container = migrateTemplate.migrateReferenceTemplate(
                 container, version);
         // Store to the new repository. The interface and
-        // definition are the same for reference templates.
+        // definition are the same for reference templates. We
+        // also use the resource as an identifier.
         target.setReferenceDefinition(
-                id, container.definitionStatements);
+                container.resource.stringValue(),
+                container.definitionStatements);
         target.setReferenceConfiguration(
-                id, container.configurationStatements);
+                container.resource.stringValue(),
+                container.configurationStatements);
     }
 
     protected ReferenceContainer loadReferenceToContainer(
-            String id) throws StoreException {
+            String iri) throws StoreException {
         ReferenceContainer result = new ReferenceContainer();
         result.definitionStatements = Statements.set();
-        result.definitionStatements.addAll(source.getReferenceDefinition(id));
+        result.definitionStatements.addAll(source.getReferenceDefinition(iri));
         result.configurationStatements = Statements.set();
         result.configurationStatements.addAll(
-                source.getReferenceConfiguration(id));
+                source.getReferenceConfiguration(iri));
         result.resource = TemplateReader.readResource(
                 result.definitionStatements);
         return result;

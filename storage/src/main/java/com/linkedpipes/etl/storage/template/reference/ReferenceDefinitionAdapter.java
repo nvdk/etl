@@ -23,6 +23,11 @@ public class ReferenceDefinitionAdapter {
         if (resource == null) {
             return null;
         }
+        return create(statements, resource);
+    }
+
+    public static ReferenceDefinition create(
+            Statements statements, Resource resource) {
         ReferenceDefinition result = new ReferenceDefinition();
         result.resource = resource;
         for (Statement statement :

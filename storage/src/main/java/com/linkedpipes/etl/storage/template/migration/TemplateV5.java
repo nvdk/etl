@@ -11,11 +11,10 @@ import java.util.stream.Collectors;
 
 public class TemplateV5 {
 
-    public static Resource loadParent(
-            Resource resource, Statements statements) {
-        return TemplateV0.loadParent(resource, statements);
-    }
-
+    /**
+     * This is the first version where version is stored as a part of a
+     * template.
+     */
     public static Integer loadVersion(
             Resource resource, Statements statements) {
         List<Literal> parents = statements.select(
@@ -30,9 +29,18 @@ public class TemplateV5 {
         return null;
     }
 
-    public static Resource loadConfiguration(
+    public static Resource loadKnownAs(
             Resource resource, Statements statements) {
-        return TemplateV0.loadConfiguration(resource, statements);
+        List<Resource> knownAs = statements.select(
+                resource, "http://www.w3.org/2002/07/owl#sameAs", null)
+                .objects().stream()
+                .filter(Value::isResource)
+                .map(item -> (Resource)item)
+                .collect(Collectors.toList());
+        if (knownAs.size() == 1) {
+            return knownAs.get(0);
+        }
+        return null;
     }
 
 }

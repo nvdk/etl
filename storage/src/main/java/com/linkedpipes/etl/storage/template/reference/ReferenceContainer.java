@@ -9,8 +9,6 @@ import org.eclipse.rdf4j.model.Resource;
  */
 public class ReferenceContainer {
 
-    public String identifier;
-
     public Resource resource;
 
     public Statements definitionStatements;

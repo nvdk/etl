@@ -1,183 +1,181 @@
 package com.linkedpipes.etl.storage.template.importer;
 
+import com.linkedpipes.etl.storage.TestUtils;
+import com.linkedpipes.etl.storage.template.TemplateEventListener;
+import com.linkedpipes.etl.storage.template.reference.ReferenceContainer;
+import com.linkedpipes.etl.storage.template.store.StatementsTemplateStore;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class TestImportTemplates {
 
-    @Test
-    public void importPipelineV1() {
+    private static final String PLUGIN_PREFIX =
+            "http://etl.linkedpipes.com/resources/components/";
 
+    private static final List<String> PLUGIN_TEMPLATES = Arrays.asList(
+            PLUGIN_PREFIX + "t-sparqlConstructChunked/0.0.0",
+            PLUGIN_PREFIX + "e-textHolder/0.0.0"
+    );
+
+    private static class StubTemplateEventListener
+            implements TemplateEventListener {
+
+        final Map<String, String> knownAs = new HashMap<>();
+
+        @Override
+        public void onReferenceTemplateCreated(ReferenceContainer container) {
+            if (container.definition.knownAs != null) {
+                knownAs.put(
+                        container.definition.knownAs.stringValue(),
+                        container.resource.stringValue());
+            }
+        }
     }
 
+    @Test
+    public void importPipelineV1() throws Exception {
+        var statements = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v1.trig");
+        StatementsTemplateStore store = new StatementsTemplateStore();
+        ImportTemplates worker = new ImportTemplates(
+                new StubTemplateEventListener(), store,
+                "http://localhost:8080",
+                PLUGIN_TEMPLATES::contains,
+                (iri) -> null);
+
+        var result = worker.importFromStatement(statements, 1);
+        Assertions.assertTrue(result.ignoredTemplates.isEmpty());
+        Assertions.assertTrue(result.updatedTemplates.isEmpty());
+        Assertions.assertEquals(1, result.localizedTemplates.size());
+
+        Resource inputTemplate = SimpleValueFactory.getInstance().createIRI(
+                "http://example.com/components/1621865731462");
+
+        Resource importedAs = result.localizedTemplates.get(inputTemplate);
+        Assertions.assertEquals(
+                "http://localhost:8080/resources/components/1",
+                importedAs.stringValue());
+
+        var expectedTemplates = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v1.templates.trig");
+        TestUtils.assertIsomorphic(expectedTemplates, store.getStatements());
+    }
 
     @Test
-    public void importPipelineV5() {
+    public void mapPipelineV1() {
+        var statements = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v1.trig");
+        StatementsTemplateStore store = new StatementsTemplateStore();
+        ImportTemplates worker = new ImportTemplates(
+                new StubTemplateEventListener(), store,
+                "http://localhost:8080",
+                PLUGIN_TEMPLATES::contains,
+                (iri) -> null);
 
+        var result = worker.mapFromStatement(statements, 1);
+        Assertions.assertEquals(1, result.ignoredTemplates.size());
+        Assertions.assertTrue(result.updatedTemplates.isEmpty());
+        Assertions.assertTrue(result.localizedTemplates.isEmpty());
+    }
+
+    /**
+     * Test that a mapping can be loaded from the pipeline.
+     */
+    @Test
+    public void importPipelineV1WithMapping() throws Exception {
+        var statements = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v1-mapping.trig");
+        StatementsTemplateStore store = new StatementsTemplateStore();
+        ImportTemplates worker = new ImportTemplates(
+                new StubTemplateEventListener(), store,
+                "http://localhost:8080",
+                PLUGIN_TEMPLATES::contains,
+                (iri) -> null);
+
+        var result = worker.importFromStatement(statements, 1);
+        Assertions.assertTrue(result.ignoredTemplates.isEmpty());
+        Assertions.assertTrue(result.updatedTemplates.isEmpty());
+        Assertions.assertEquals(1, result.localizedTemplates.size());
+
+        var expectedTemplates = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v1-mapping.templates.trig");
+        TestUtils.assertIsomorphic(expectedTemplates, store.getStatements());
+    }
+
+    @Test
+    public void importPipelineV5() throws Exception {
+        var statements = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v5.trig");
+        StatementsTemplateStore store = new StatementsTemplateStore();
+        ImportTemplates worker = new ImportTemplates(
+                new StubTemplateEventListener(), store,
+                "http://localhost:8080",
+                PLUGIN_TEMPLATES::contains,
+                (iri) -> null);
+
+        var result = worker.importFromStatement(statements, 0);
+        Assertions.assertTrue(result.ignoredTemplates.isEmpty());
+        Assertions.assertTrue(result.updatedTemplates.isEmpty());
+        Assertions.assertEquals(2, result.localizedTemplates.size());
+
+        var factory = SimpleValueFactory.getInstance();
+        Assertions.assertEquals(
+                "http://localhost:8080/resources/components/1",
+                result.localizedTemplates.get(factory.createIRI(
+                        "http://example.com/components/1621937417354"))
+                        .stringValue());
+        Assertions.assertEquals(
+                "http://localhost:8080/resources/components/2",
+                result.localizedTemplates.get(factory.createIRI(
+                        "http://example.com/components/1621937467650"))
+                        .stringValue());
+
+        var expectedTemplates = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v5.templates.trig");
+        TestUtils.assertIsomorphic(expectedTemplates, store.getStatements());
     }
 
     /**
      * This test should not create redundant templates as they should be
-     * imported only in the first pipeline import.
+     * imported only in the first pipeline import. The second import
+     * only change one of the templates configuration.
      */
     @Test
-    public void importPipelineV5Twice() {
+    public void importPipelineV5AndV5Second() throws Exception {
+        var statements = TestUtils.rdfFromResource(
+                "template/importer/pipeline-v5.trig");
+        StatementsTemplateStore store = new StatementsTemplateStore();
+        // For this test we need the knownAs template source we use listener
+        // to get this functionality.
+        var listener = new StubTemplateEventListener();
+        ImportTemplates worker = new ImportTemplates(
+                listener, store,
+                "http://localhost:8080",
+                PLUGIN_TEMPLATES::contains,
+                listener.knownAs::get);
+        worker.importFromStatement(statements, 0);
 
+        // Now import template that is knowAs the template from the
+        // previous import.
+        var nextStatements = TestUtils.rdfFromResource(
+                "template/importer/templates-v5-second.trig");
+        var result = worker.importFromStatement(nextStatements, 0);
+        Assertions.assertTrue(result.ignoredTemplates.isEmpty());
+        Assertions.assertEquals(1, result.updatedTemplates.size());
+        Assertions.assertTrue(result.localizedTemplates.isEmpty());
+
+        var expectedTemplates = TestUtils.rdfFromResource(
+                "template/importer/templates-v5-second.templates.trig");
+        TestUtils.assertIsomorphic(expectedTemplates, store.getStatements());
     }
 
 }
-
-//    public static ValueFactory valueFactory = SimpleValueFactory.getInstance();
-//
-//    @Test
-//    public void loadPipeline00() throws Exception {
-//        var input = TestUtils.statementsFromResource(
-//                "pipeline/importer/00-input.trig");
-//
-//        TemplateStore store = new TemplateMemoryStore("http://localhost");
-//        TemplatesData data = new TemplatesData(store);
-//        data.templates.put("http://localhost/components/124",
-//                Template.Reference(null));
-//
-//        ImportTemplateOptions options = new ImportTemplateOptions();
-//        var actual = createCommand(data, new HashMap<>()).apply(
-//                options, Statements.wrap(input),
-//                valueFactory.createIRI("http://localhost/pipeline"));
-//
-//        Set<Resource> actualGraph = new HashSet<>();
-//        actual.unUsedStatements.forEach(st -> actualGraph.add(st.getContext()));
-//        Assertions.assertIterableEquals(Arrays.asList(
-//                valueFactory.createIRI(
-//                        "http://localhost/pipeline/3405c1ee/configuration"),
-//                valueFactory.createIRI("http://localhost/pipeline")),
-//                actualGraph
-//        );
-//
-//        var templateMapping = actual.remoteToLocal;
-//
-//        Assertions.assertTrue(templateMapping.isEmpty());
-//
-//    }
-//
-//    public ImportTemplates createCommand(
-//            TemplatesData data, Map<String, String> mapping) {
-//        return new ImportTemplates(data) {
-//
-//            @Override
-//            protected Map<String, String> collectRemoteToLocalMapping() {
-//                return mapping;
-//            }
-//        };
-//    }
-//
-//    @Test
-//    public void loadPipeline01() throws Exception {
-//        var input = TestUtils.statementsFromResource(
-//                "pipeline/importer/01-input.trig");
-//
-//        TemplateStore store = new TemplateMemoryStore("http://localhost");
-//        TemplatesData data = new TemplatesData(store);
-//        data.templates.put(
-//                "http://localhost/resources/components/e-sparqlEndpoint",
-//                Template.Reference(null));
-//
-//        ImportTemplateOptions options = new ImportTemplateOptions();
-//        var actual = createCommand(data, new HashMap<>()).apply(
-//                options, Statements.wrap(input),
-//                valueFactory.createIRI("http://localhost/pipeline"));
-//
-//        Set<Resource> actualGraph = new HashSet<>();
-//        actual.unUsedStatements.forEach(st -> actualGraph.add(st.getContext()));
-//        Assertions.assertIterableEquals(Arrays.asList(
-//                valueFactory.createIRI("http://localhost/config/0"),
-//                valueFactory.createIRI("http://localhost/pipeline")),
-//                actualGraph
-//        );
-//
-//        var templateMapping = actual.remoteToLocal;
-//
-//        Resource templateOne = valueFactory.createIRI(
-//                "http://localhost/resources/components/1");
-//        Assertions.assertTrue(templateMapping.containsKey(templateOne));
-//
-//    }
-//
-//    @Test
-//    public void loadPipeline02() throws Exception {
-//        var valueFactory = SimpleValueFactory.getInstance();
-//
-//        var templates = TestUtils.statementsFromResource(
-//                "pipeline/importer/02-templates.trig");
-//
-//        TemplateStore store = new TemplateMemoryStore("http://localhost");
-//        store.storeReferenceDefinition("http://localhost/first",
-//                Statements.wrap(templates).selectByGraph(
-//                        "http://localhost/first"));
-//
-//        store.storeReferenceDefinition("http://localhost/second",
-//                Statements.wrap(templates).selectByGraph(
-//                        "http://localhost/second"));
-//
-//        TemplatesData data = new TemplatesData(store);
-//        data.templates.put(
-//                "http://etl.linkedpipes.com/components/e-textHolder/0.0.0",
-//                Template.Reference(null));
-//
-//        Map<String, String> mapping = new HashMap<>();
-//        mapping.put(
-//                "https://demo.etl.linkedpipes.com/918b11c20b3a",
-//                "http://localhost/first");
-//        mapping.put(
-//                "https://demo.etl.linkedpipes.com/fbb905222f71",
-//                "http://localhost/second");
-//
-//        ImportTemplateOptions options = new ImportTemplateOptions();
-//        options.updateExistingConfiguration = true;
-//
-//        var input = TestUtils.statementsFromResource(
-//                "pipeline/importer/02-input.trig");
-//
-//        var actual = createCommand(data, mapping).apply(
-//                options, Statements.wrap(input),
-//                valueFactory.createIRI("http://localhost:8080/pipeline"));
-//
-//        Set<Resource> actualGraph = new HashSet<>();
-//        actual.unUsedStatements.forEach(st -> actualGraph.add(st.getContext()));
-//        Assertions.assertIterableEquals(Arrays.asList(
-//                valueFactory.createIRI("http://localhost:8080/pipeline"),
-//                valueFactory.createIRI("http://localhost:8080/pipeline/4")),
-//                actualGraph
-//        );
-//
-//        var templateMapping = actual.remoteToLocal;
-//
-//        Resource templateOne = valueFactory.createIRI(
-//                "http://localhost:8080/resources/components/" +
-//                        "1622805775578-" +
-//                        "ff2aa41d-16d7-413f-b44b-99b8902a76ad");
-//        Assertions.assertTrue(templateMapping.containsKey(templateOne));
-//
-//        Resource templateTwo = valueFactory.createIRI(
-//                "http://localhost:8080/resources/components/" +
-//                        "1622805775596-" +
-//                        "87fe062b-3710-434f-8fd2-598cac33b97c");
-//        Assertions.assertTrue(templateMapping.containsKey(templateTwo));
-//
-//        Resource templateThree = valueFactory.createIRI(
-//                "http://localhost:8080/resources/components/" +
-//                        "1622805775592");
-//        Assertions.assertTrue(templateMapping.containsKey(templateThree));
-//
-//        // http://localhost:8080/resources/components/1622805775578-ff2aa41d-16d7-413f-b44b-99b8902a76ad
-//        // -> http://localhost/1623093587266-939c7614-a1de-4f9a-8fca-972632b5eec3
-//
-//        Assertions.assertEquals(
-//                "http://localhost/first",
-//                templateMapping.get(templateOne).stringValue()
-//        );
-//
-//        Assertions.assertEquals(
-//                "http://localhost/second",
-//                templateMapping.get(templateTwo).stringValue()
-//        );
-//
-//    }

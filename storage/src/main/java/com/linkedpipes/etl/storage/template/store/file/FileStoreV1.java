@@ -13,10 +13,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +45,10 @@ public class FileStoreV1 implements TemplateStore {
 
     private final File directory;
 
+    private final Base64.Encoder encoder = Base64.getEncoder();
+
+    private final Base64.Decoder decoder = Base64.getDecoder();
+
     public FileStoreV1(File directory) {
         this.directory = directory;
     }
@@ -53,11 +59,13 @@ public class FileStoreV1 implements TemplateStore {
     }
 
     @Override
-    public List<String> getReferenceIdentifiers() {
+    public List<String> getReferencesIri() {
         return listDirectories().stream()
                 .filter(File::isDirectory)
                 .map(File::getName)
-                .filter(name -> !name.startsWith("jar-"))
+                .map(name -> new String(
+                        decoder.decode(name),
+                        StandardCharsets.UTF_8))
                 .collect(Collectors.toList());
     }
 
@@ -70,12 +78,12 @@ public class FileStoreV1 implements TemplateStore {
     }
 
     @Override
-    public String reserveIdentifier() throws StoreException {
+    public String reserveIri(String domain) throws StoreException {
         for (int i = 0; i < REFERENCE_CREATE_ATTEMPT; ++i) {
-            String id = createId();
-            File path = getDirectory(id);
+            String iri = createId();
+            File path = getDirectory(iri);
             if (path.mkdir()) {
-                return id;
+                return domain + COMPONENT_IRI_SUFFIX + iri;
             }
         }
         throw new StoreException("Can not create directory in: {}", directory);
@@ -85,18 +93,21 @@ public class FileStoreV1 implements TemplateStore {
         return (new Date()).getTime() + "-" + UUID.randomUUID();
     }
 
-    protected File getDirectory(String id) {
-        return new File(directory, id);
+    protected File getDirectory(String iri) {
+        String encoded = encoder.encodeToString(
+                iri.getBytes(StandardCharsets.UTF_8));
+        return new File(directory, encoded);
     }
 
     @Override
-    public List<Statement> getPluginDefinition(String id) throws StoreException {
-        return readStatements(id, DEFINITION);
+    public List<Statement> getPluginDefinition(
+            String iri) throws StoreException {
+        return readStatements(iri, DEFINITION);
     }
 
-    protected List<Statement> readStatements(String id, String fileName)
+    protected List<Statement> readStatements(String iri, String fileName)
             throws StoreException {
-        File file = new File(getDirectory(id), fileName + ".trig");
+        File file = new File(getDirectory(iri), fileName + ".trig");
         if (!file.exists()) {
             return Collections.emptyList();
         }
@@ -109,23 +120,21 @@ public class FileStoreV1 implements TemplateStore {
 
     @Override
     public void setPlugin(
-            String id,
+            String iri,
             Collection<Statement> definition,
             Collection<Statement> configuration,
             Collection<Statement> configurationDescription)
             throws StoreException {
+        saveStatements(iri, DEFINITION, definition);
+        saveStatements(iri, CONFIGURATION, configuration);
         saveStatements(
-                id, DEFINITION, definition);
-        saveStatements(
-                id, CONFIGURATION, configuration);
-        saveStatements(
-                id, CONFIGURATION_DESCRIPTION, configurationDescription);
+                iri, CONFIGURATION_DESCRIPTION, configurationDescription);
     }
 
     protected void saveStatements(
-            String id, String fileName, Collection<Statement> statements)
+            String iri, String fileName, Collection<Statement> statements)
             throws StoreException {
-        File directory = getDirectory(id);
+        File directory = getDirectory(iri);
         directory.mkdirs();
         File file = new File(directory, fileName + ".trig");
         try (OutputStream stream = new FileOutputStream(file)) {
@@ -136,48 +145,48 @@ public class FileStoreV1 implements TemplateStore {
     }
 
     @Override
-    public List<Statement> getReferenceDefinition(String id)
+    public List<Statement> getReferenceDefinition(String iri)
             throws StoreException {
-        return readStatements(id, DEFINITION);
+        return readStatements(iri, DEFINITION);
     }
 
     @Override
     public void setReferenceDefinition(
-            String id, Collection<Statement> statements)
+            String iri, Collection<Statement> statements)
             throws StoreException {
-        saveStatements(id, DEFINITION, statements);
+        saveStatements(iri, DEFINITION, statements);
     }
 
 
     @Override
-    public List<Statement> getPluginConfiguration(String id)
+    public List<Statement> getPluginConfiguration(String iri)
             throws StoreException {
-        return readStatements(id, CONFIGURATION);
+        return readStatements(iri, CONFIGURATION);
     }
 
     @Override
     public List<Statement> getReferenceConfiguration(
-            String id) throws StoreException {
-        return readStatements(id, CONFIGURATION);
+            String iri) throws StoreException {
+        return readStatements(iri, CONFIGURATION);
     }
 
     @Override
     public void setReferenceConfiguration(
-            String id, Collection<Statement> statements)
+            String iri, Collection<Statement> statements)
             throws StoreException {
-        saveStatements(id, CONFIGURATION, statements);
+        saveStatements(iri, CONFIGURATION, statements);
     }
 
     @Override
-    public List<Statement> getPluginConfigurationDescription(String id)
+    public List<Statement> getPluginConfigurationDescription(String iri)
             throws StoreException {
-        return readStatements(id, CONFIGURATION_DESCRIPTION);
+        return readStatements(iri, CONFIGURATION_DESCRIPTION);
     }
 
     @Override
-    public byte[] getPluginFile(String id, String path)
+    public byte[] getPluginFile(String iri, String path)
             throws StoreException {
-        Path pathToFile = getFilePath(id, path);
+        Path pathToFile = getFilePath(iri, path);
         try {
             return Files.readAllBytes(pathToFile);
         } catch (IOException ex) {
@@ -185,14 +194,14 @@ public class FileStoreV1 implements TemplateStore {
         }
     }
 
-    protected Path getFilePath(String id, String path) {
-        return (new File(getDirectory(id), path)).toPath();
+    protected Path getFilePath(String iri, String path) {
+        return (new File(getDirectory(iri), path)).toPath();
     }
 
     @Override
-    public void setPluginFile(String id, String path, byte[] content)
+    public void setPluginFile(String iri, String path, byte[] content)
             throws StoreException {
-        Path pathToFile = getFilePath(id, path);
+        Path pathToFile = getFilePath(iri, path);
         pathToFile.getParent().toFile().mkdirs();
         try {
             Files.write(pathToFile, content);
@@ -202,8 +211,8 @@ public class FileStoreV1 implements TemplateStore {
     }
 
     @Override
-    public void removeReference(String id) throws StoreException {
-        File dir = getDirectory(id);
+    public void removeReference(String iri) throws StoreException {
+        File dir = getDirectory(iri);
         if (!FileUtils.deleteQuietly(dir)) {
             throw new StoreException("Can't delete directory with template");
         }
