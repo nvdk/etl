@@ -54,9 +54,17 @@
     return model;
   };
 
+  service.setPipelineResource = (model, resource) => {
+    model.pipeline.resource["@id"] = resource;
+  };
+
   service.getPipelineLabel = (model) => {
     return jsonld.r.getPlainString(
       model.pipeline.resource, SKOS.PREF_LABEL);
+  };
+
+  service.setPipelineLabel = (model, label) => {
+    jsonld.r.setStrings(model.pipeline.resource, SKOS.PREF_LABEL, label);
   };
 
   service.getPipelineResource = (model) => {

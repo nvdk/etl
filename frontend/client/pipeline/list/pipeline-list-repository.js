@@ -100,8 +100,8 @@
 
     function createRepository(filters) {
       const builder = jsonLdSource.createBuilder();
-      builder.url("resources/pipelines");
-      builder.itemType(LP.PIPELINE);
+      builder.url("/api/v2/pipelines/");
+      builder.itemType(LP.PIPELINE_LIST_ITEM);
       builder.tombstoneType(LP.TOMBSTONE);
       builder.itemTemplate(REPOSITORY_TEMPLATE);
       const repository = repositoryService.createWithInfiniteScroll({

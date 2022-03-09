@@ -26,7 +26,7 @@
         callbackReference = $lpScrollWatch.registerCallback((byButton) => {
             service.increaseVisibleItemLimit();
             if (!byButton) {
-                // This event come outside of Angular scope.
+                // This event come outside Angular scope.
                 $scope.$apply();
             }
         });

@@ -1,0 +1,204 @@
+# Exported from ETL version 3a8b6f40d35f638a199a29936659c12987a983fe .
+# The configuration was altered, queries trimmed to save space.
+
+<https://example.com/resources/pipelines/1637172516507> {
+  <https://example.com/resources/pipelines/1637172516507> a <http://linkedpipes.com/ontology/Pipeline>;
+    <http://etl.linkedpipes.com/ontology/version> "2"^^<http://www.w3.org/2001/XMLSchema#int>;
+    <http://linkedpipes.com/ontology/profile> <https://example.com/resources/pipelines/1637172516507/profile/default>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Pipeline with templates" .
+  
+  <https://example.com/resources/pipelines/1637172516507/profile/default>
+    a <http://linkedpipes.com/ontology/ExecutionProfile>;
+    <http://linkedpipes.com/ontology/rdfRepositoryPolicy> <http://linkedpipes.com/ontology/repository/SingleRepository>;
+    <http://linkedpipes.com/ontology/rdfRepositoryType> <http://linkedpipes.com/ontology/repository/NativeStore> .
+  
+  <https://example.com/resources/pipelines/1637172516507/component/f434-8407>
+    a <http://linkedpipes.com/ontology/Component>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/pipelines/1637172516507/component/f434-8407/configuration>;
+    <http://linkedpipes.com/ontology/template> <https://example.com/resources/components/1479744922853>;
+    <http://linkedpipes.com/ontology/x> 217;
+    <http://linkedpipes.com/ontology/y> 176;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "[MFČR] Číselníky (new)" .
+  
+  <https://example.com/resources/pipelines/1637172516507/component/bed9-ba93>
+    a <http://linkedpipes.com/ontology/Component>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/pipelines/1637172516507/component/bed9-ba93/configuration>;
+    <http://linkedpipes.com/ontology/template> <https://example.com/resources/components/16361>;
+    <http://linkedpipes.com/ontology/x> 253;
+    <http://linkedpipes.com/ontology/y> 278;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "RÚIAN Code mapping" .
+  
+  <https://example.com/resources/pipelines/1637172516507/component/268e-8e31>
+    a <http://linkedpipes.com/ontology/Component>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/pipelines/1637172516507/component/268e-8e31/configuration>;
+    <http://linkedpipes.com/ontology/template> <https://example.com/resources/components/1480504305329>;
+    <http://linkedpipes.com/ontology/x> 239;
+    <http://linkedpipes.com/ontology/y> 401;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Získat Concept schemes" .
+  
+  <https://example.com/resources/pipelines/1637172516507/component/3e92-b0df>
+    a <http://linkedpipes.com/ontology/Component>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/pipelines/1637172516507/component/3e92-b0df/configuration>;
+    <http://linkedpipes.com/ontology/template> <https://example.com/resources/components/1477934791533>;
+    <http://linkedpipes.com/ontology/x> 577;
+    <http://linkedpipes.com/ontology/y> 267;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Second level SPARQL construct template" .
+}
+
+<https://example.com/resources/pipelines/1637172516507/component/f434-8407/configuration> {
+  <https://example.com/resources/components/1479744922853/new/1> a <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#defaultGraphControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#encodeRdfControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpoint> "http://xrg15.ms.mff.cuni.cz:3330/mfcr/query";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpointControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#handleInvalidDataControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#headerAcceptControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#passwordControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#query> "CONSTRUCT { ?s ?p ?o } WHERE { graph ?g {?s ?p ?o }}";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#useAuthenticationControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#useTolerantRepositoryControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#userNameControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<https://example.com/resources/pipelines/1637172516507/component/bed9-ba93/configuration> {
+  <https://example.com/resources/components/16361/new/1>
+    a <http://plugins.linkedpipes.com/ontology/e-httpGetFile#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#encodeUrl> false;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#encodeUrlControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileName> "ruian-mapping.csv";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileNameControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileUri> "http://localhost/mapping/ruian-mapping.csv";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileUriControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#hardRedirect> false;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#hardRedirectControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#userAgent> "";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#userAgentControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#utf8RedirectControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<https://example.com/resources/pipelines/1637172516507/component/268e-8e31/configuration> {
+  <https://example.com/resources/components/1480504305329/new/1> a <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#defaultGraphControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#encodeRdfControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpoint> "http://localhost:8890/sparql";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpointControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#handleInvalidDataControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#headerAcceptControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#passwordControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#query> """...""";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#useAuthenticationControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#useTolerantRepositoryControl>
+      <http://plugins.linkedpipes.com/resource/configuration/Inherit>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#userNameControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<https://example.com/resources/pipelines/1637172516507/component/3e92-b0df/configuration> {
+  <https://example.com/resources/components/1477934791533/new/1> a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> """...""";
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<https://example.com/resources/components/14779> {
+  <https://example.com/resources/components/14779> a <http://linkedpipes.com/ontology/Template>;
+    <http://purl.org/dc/terms/description> "qqqqqDDD";
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "SPARQL construct template";
+    <http://www.w3.org/2004/02/skos/core#note> "qqqqqNN";
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/components/14779/configuration>;
+    <http://linkedpipes.com/ontology/template> <http://etl.linkedpipes.com/resources/components/t-sparqlConstruct/0.0.0> .
+}
+
+<https://example.com/resources/components/14779/configuration> {
+  <https://example.com/resources/components/14779/configuration>
+    a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> """...""";
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Force> .
+}
+
+<https://example.com/resources/components/1477934791533> {
+  <https://example.com/resources/components/1477934791533> a <http://linkedpipes.com/ontology/Template>;
+    <http://linkedpipes.com/ontology/template> <https://example.com/resources/components/14779>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Second level SPARQL construct template";
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/components/1477934791533/configuration> .
+}
+
+<https://example.com/resources/components/1477934791533/configuration> {
+  <https://example.com/resources/components/1477934791533/configuration/0>
+    a <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#query> """...""";
+    <http://plugins.linkedpipes.com/ontology/t-sparqlConstruct#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Inherit> .
+}
+
+<https://example.com/resources/components/1480504305329> {
+  <https://example.com/resources/components/1480504305329> a <http://linkedpipes.com/ontology/Template>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/components/1480504305329/configuration>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Získat Concept schemes";
+    <http://linkedpipes.com/ontology/template> <http://etl.linkedpipes.com/resources/components/e-sparqlEndpoint/0.0.0> .
+}
+
+<https://example.com/resources/components/1480504305329/configuration> {
+  <https://example.com/resources/components/1480504305329/configuration/0>
+    a <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpoint> "http://localhost:8890/sparql";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpointControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#query> """...""";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Force> .
+}
+
+<https://example.com/resources/components/1479744922853> {
+  <https://example.com/resources/components/1479744922853> a <http://linkedpipes.com/ontology/Template>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "[MFČR] Číselníky (new)";
+    <http://linkedpipes.com/ontology/template> <http://etl.linkedpipes.com/resources/components/e-sparqlEndpoint/0.0.0>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/components/1479744922853/configuration> .
+}
+
+<https://example.com/resources/components/1479744922853/configuration> {
+  <https://example.com/resources/components/1479744922853/configuration>
+    a <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#defaultGraphControl> <http://plugins.linkedpipes.com/resource/configuration/None>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpoint> "http://xrg15.ms.mff.cuni.cz:3330/mfcr/query";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#endpointControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#headerAcceptControl> <http://plugins.linkedpipes.com/resource/configuration/None>;
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#query> "CONSTRUCT { ?s ?p ?o } WHERE { graph ?g {?s ?p ?o }}";
+    <http://plugins.linkedpipes.com/ontology/e-sparqlEndpoint#queryControl> <http://plugins.linkedpipes.com/resource/configuration/Force> .
+}
+
+<https://example.com/resources/components/16361> {
+  <https://example.com/resources/components/16361>
+    a <http://linkedpipes.com/ontology/Template>;
+    <http://linkedpipes.com/ontology/configurationGraph> <https://example.com/resources/components/16361/configuration>;
+    <http://linkedpipes.com/ontology/template> <http://etl.linkedpipes.com/resources/components/e-httpGetFile/0.0.0>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "RÚIAN Code mapping" .
+}
+
+<https://example.com/resources/components/16361/configuration> {
+  <https://example.com/resources/components/16361/configuration/0>
+    a <http://plugins.linkedpipes.com/ontology/e-httpGetFile#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#encodeUrl> false;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#encodeUrlControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileName> "ruian-mapping.csv";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileNameControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileUri> "http://localhost/mapping/ruian-mapping.csv";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#fileUriControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#hardRedirect> false;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#hardRedirectControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#userAgent> "";
+    <http://plugins.linkedpipes.com/ontology/e-httpGetFile#userAgentControl> <http://plugins.linkedpipes.com/resource/configuration/Force> .
+}
+
+<http://etl.linkedpipes.com/resources/plugins/mapping> {
+  <http://uv.etl.linkedpipes.com/resources/plugins/e-sparqlEndpoint-1.0.0.jar/Z%C3%ADskat+Concept+schemes>
+    <http://www.w3.org/2002/07/owl#sameAs> <https://example.com/resources/components/1480504305329> .
+  
+  <http://uv.etl.linkedpipes.com/resources/plugins/e-sparqlEndpoint-1.0.0.jar/%5BMF%C4%8CR%5D+%C4%8C%C3%ADseln%C3%ADky+%28new%29>
+    <http://www.w3.org/2002/07/owl#sameAs> <https://example.com/resources/components/1479744922853> .
+  
+  <https://etl.nakit.opendata.cz/resources/components/1537>
+    <http://www.w3.org/2002/07/owl#sameAs> <https://example.com/resources/components/16361> .
+}

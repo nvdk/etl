@@ -55,7 +55,6 @@
     }
 
     function saveDialogToPipeline() {
-      console.log($scope);
       jsonld.r.setStrings(model.definition, SKOS.PREF_LABEL,
         $scope.detail.label);
       jsonld.r.setStrings(model.definition, LP.HAS_TAG,

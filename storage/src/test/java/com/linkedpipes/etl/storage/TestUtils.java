@@ -1,6 +1,9 @@
 package com.linkedpipes.etl.storage;
 
+import com.linkedpipes.etl.storage.rdf.Statements;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -14,18 +17,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestUtils {
 
     private static final ClassLoader loader =
             Thread.currentThread().getContextClassLoader();
 
-    public static File fileFromResource(String fileName) {
+    public static File file(String fileName) {
         URL url = loader.getResource(fileName);
         if (url == null) {
             throw new RuntimeException(
@@ -34,14 +39,19 @@ public class TestUtils {
         return new File(url.getPath());
     }
 
-    public static Collection<Statement> rdfFromResource(String fileName) {
-        File file = fileFromResource(fileName);
+    public static Statements statements(String fileName) {
+        return Statements.wrap(rdf(fileName));
+    }
+
+    public static Collection<Statement> rdf(String fileName) {
+        File file = file(fileName);
         return read(file, getFormat(file));
     }
 
     protected static RDFFormat getFormat(File file) {
         return Rio.getParserFormatForFileName(file.getName()).orElseThrow(
-                () -> new RuntimeException("Invalid RDF type for file."));
+                () -> new RuntimeException(
+                        "Invalid RDF type for file: " + file));
     }
 
     protected static Collection<Statement> read(File file, RDFFormat format) {
@@ -72,6 +82,25 @@ public class TestUtils {
             }
         }
         return statements;
+    }
+
+    public static void assertIsomorphicIgnoreGraph(
+            Collection<Statement> expected, Collection<Statement> actual) {
+        ValueFactory valueFactory = SimpleValueFactory.getInstance();
+        assertIsomorphic(
+                expected.stream().map(
+                        st -> valueFactory.createStatement(
+                                st.getSubject(),
+                                st.getPredicate(),
+                                st.getObject())
+                ).collect(Collectors.toList()),
+                actual.stream().map(
+                        st -> valueFactory.createStatement(
+                                st.getSubject(),
+                                st.getPredicate(),
+                                st.getObject())
+                ).collect(Collectors.toList())
+        );
     }
 
     public static void assertIsomorphic(
@@ -112,6 +141,14 @@ public class TestUtils {
 
         }
         Assertions.assertTrue(isomorphic);
+    }
+
+    public static File tempDirectory() throws IOException {
+        return Files.createTempDirectory("lp-etl-").toFile();
+    }
+
+    public static void removeDirectory(File directory) throws IOException {
+        FileUtils.deleteDirectory(directory);
     }
 
 }

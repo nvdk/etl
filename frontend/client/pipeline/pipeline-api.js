@@ -1,12 +1,17 @@
 ((definition) => {
   if (typeof define === "function" && define.amd) {
     define([
-      "@client/app-service/vocabulary"
+      "@client/app-service/vocabulary",
+      "@client/pipeline/edit/model/pipeline-model"
     ], definition);
   }
-})((vocabulary) => {
+})((vocabulary, pipelineModel) => {
+
+  // TODO Move all pipeline related operations to this file. Also from repositories.
 
   const LP = vocabulary.LP;
+
+  const MIME_TYPE_JSON_LD = "application/ld+json";
 
   function executePipeline($http, iri, options) {
     const config = createExecutionConfiguration(options);
@@ -55,123 +60,103 @@
   }
 
   function postPipelineExecution($http, iri, config) {
-    const url = "./resources/executions?pipeline=" + iri;
+    const url = "./resources/executions?pipeline=" + encodeURIComponent(iri);
     return $http.post(url, config);
   }
 
-  function createPipeline($http) {
-    const data = createPipelineCreatePostData();
-    const config = createPostConfigWithJsonLd();
-    const url = "./resources/pipelines/";
-    return $http.post(url, data, config);
-  }
-
-  function createPipelineCreatePostData() {
-    const data = new FormData();
-    const options = createEmptyPipelineCreateOptions();
-    addOptionsToData(data, options);
-    return data;
-  }
-
-  function addOptionsToData(data, options) {
-    data.append("options", new Blob([JSON.stringify(options)], {
-      "type": "application/ld+json"
-    }), "options.jsonld");
-  }
-
-  function createEmptyPipelineCreateOptions() {
-    return {
-      "@id": "http://localhost/options",
-      "@type": LP.UPDATE_OPTIONS
+  function createEmptyPipeline($http) {
+    const url = "./api/v2/pipelines/";
+    const pipeline = {
+      "@type": "http://linkedpipes.com/ontology/Pipeline",
+      "http://www.w3.org/2004/02/skos/core#prefLabel": "New pipeline",
+      "http://etl.linkedpipes.com/ontology/version": 5
     };
-  }
-
-  function createPostConfigWithJsonLd() {
-    return {
-      "transformRequest": angular.identity,
+    return $http.post(url, pipeline, {
       "headers": {
-        // By this angular add Content-Type itself.
-        "Content-Type": undefined,
-        "accept": "application/ld+json"
+        "Content-Type": MIME_TYPE_JSON_LD,
+        "accept": MIME_TYPE_JSON_LD,
       }
-    };
+    }).then(response => response.headers("location"));
   }
 
-  function copyPipeline($http, pipeline) {
-    const data = createPipelineCopyPostData(pipeline);
-    const config = createPostConfigWithJsonLd();
-    const url =
-      "./resources/pipelines?fromLocal=true&pipeline=" + pipeline.iri;
-    return $http.post(url, data, config);
+  function copyPipelineFromIri($http, iri) {
+    return loadLocal($http, iri)
+      .then(pipeline => copyPipelineFromData($http, pipeline));
   }
 
-  function createPipelineCopyPostData(pipeline) {
-    const data = new FormData();
-    const options = createCopyPipelineOptions(pipeline);
-    addOptionsToData(data, options);
-    return data;
+  function asLocalFromIri($http, iri, updateTemplates) {
+    return $http({
+      "method": "GET",
+      "url": iri,
+      "headers": {
+        "Accept": MIME_TYPE_JSON_LD,
+      },
+    }).then(response => response.data)
+      .then(pipeline => asLocalPipeline(
+        $http, pipeline, "application/ld+json", "pipeline.jsonld",
+        updateTemplates)
+      );
   }
 
-  function createCopyPipelineOptions(pipeline) {
-    return {
-      "@id": "http://localhost/pipelineImportOptions",
-      "@type": LP.UPDATE_OPTIONS,
-      "http://etl.linkedpipes.com/ontology/local": true,
-      "http://www.w3.org/2004/02/skos/core#prefLabel":
-        "Copy of " + pipeline.label,
-    };
-  }
-
-  function asLocalFromIri($http, pipelineIri, updateTemplates) {
+  function asLocalPipeline(
+    $http, pipeline, pipelineMimeType, pipelineFileName, updateTemplates
+  ) {
     const formData = new FormData();
-    addTransformOptions(formData, true, updateTemplates);
-    const iri = "./resources/pipelines/localize?pipeline=" + pipelineIri;
-    return $http.post(iri, formData, noTransformConfiguration())
-      .then((data) => data["data"]);
-  }
 
-  function asLocalFromFile($http, fileWithPipeline, updateTemplates) {
-    const formData = new FormData();
-    formData.append("pipeline", fileWithPipeline);
-    addTransformOptions(formData, true, updateTemplates);
-    const iri = "./resources/pipelines/localize";
-    return $http.post(iri, formData, noTransformConfiguration())
-      .then((data) => data["data"]);
-  }
-
-  function addTransformOptions(formData, importTemplates, updateTemplates) {
     const options = {
-      "@id": "http://localhost/pipelineImportOptions",
-      "@type": LP.UPDATE_OPTIONS,
-      "http://etl.linkedpipes.com/ontology/local": false
+      "@type": "http://linkedpipes.com/ontology/ImportOptions",
+      "http://etl.linkedpipes.com/ontology/importTemplates": true,
+      "http://etl.linkedpipes.com/ontology/updateTemplates": updateTemplates,
     };
-    options[LP.HAS_IMPORT_TEMPLATES] = importTemplates;
-    options[LP.HAS_UPDATE_TEMPLATES] = updateTemplates;
-    formData.append("options", new Blob([JSON.stringify(options)], {
-      type: "application/ld+json"
+    formData.append("option", new Blob([JSON.stringify(options)], {
+      "type": MIME_TYPE_JSON_LD
     }), "options.jsonld");
-  }
 
-  function noTransformConfiguration() {
-    return {
+    formData.append("pipeline", new Blob([JSON.stringify(pipeline)], {
+      "type": pipelineMimeType
+    }), pipelineFileName);
+
+    const url = "./api/v2/pipelines/localize";
+    const postConfiguration = {
       // Do not transform data.
       "transformRequest": angular.identity,
       "headers": {
         // By this angular add Content-Type itself.
         "Content-Type": undefined,
-        "accept": "application/ld+json"
+        "accept": MIME_TYPE_JSON_LD,
       }
     };
+    return $http.post(url, formData, postConfiguration)
+      .then((data) => data["data"]);
+
+  }
+
+  function asLocalFromFile($http, formFile, updateTemplates) {
+    return loadFromFile(formFile)
+      .then(pipeline => asLocalPipeline(
+        $http, pipeline, undefined, formFile.name, updateTemplates))
+  }
+
+  function loadFromFile(formFile) {
+    return new Promise((accept, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", function (event) {
+        const pipeline = JSON.parse(event.target.result);
+        accept(pipeline);
+      });
+      reader.addEventListener("error", function (event) {
+        reject();
+      });
+      reader.readAsBinaryString(formFile);
+    });
   }
 
   function loadLocal($http, iri) {
-    const serviceUrl =
-      iri + "&templates=false&mappings=false&removePrivateConfig=false";
     return $http({
       "method": "GET",
-      "url": serviceUrl,
+      "url": "/api/v2/pipelines/definition?iri=" + encodeURIComponent(iri),
       "headers": {
-        "Accept": "application/ld+json",
+        "Accept": MIME_TYPE_JSON_LD,
       },
     }).then(response => response.data);
   }
@@ -179,64 +164,124 @@
   function deletePipeline($http, iri) {
     return $http({
       "method": "DELETE",
-      "url": iri
+      "url": "/api/v2/pipelines/?iri=" + encodeURIComponent(iri),
     });
   }
 
-  function savePipeline($http, iri, jsonld, unchecked) {
+  function savePipeline($http, jsonld) {
     return $http({
-      "method": "PUT",
-      "url": iri,
-      "params": {"unchecked": unchecked},
+      "method": "POST",
+      "url": "/api/v2/pipelines/",
       "headers": {
-        "Content-Type": "application/json",
-        "Accept": "application/ld+json",
+        "Content-Type": MIME_TYPE_JSON_LD,
+        "Accept": MIME_TYPE_JSON_LD,
       },
       "data": jsonld
     });
   }
 
-  function createPipelineFromData($http, pipeline, label) {
-    const form = new FormData();
-    form.append("pipeline",
-      new Blob([JSON.stringify(pipeline)], {
-        "type": "application/ld+json"
-      }), "pipeline.jsonld");
+  function copyPipelineFromData($http, pipelineJsonLd) {
+    const model = pipelineModel.createFromJsonLd(pipelineJsonLd);
+    pipelineModel.setPipelineResource(model, "_:");
+    const newLabel = "Copy of " + pipelineModel.getPipelineLabel(model)
+    pipelineModel.setPipelineLabel(model, newLabel);
+    const blankNodePipeline = pipelineModel.asJsonLd(model);
+
+    return savePipeline($http, blankNodePipeline)
+      .then(response => response.headers("location"));
+  }
+
+  function downloadFullPipeline($http, iri) {
+    const url = "/api/v2/pipelines/full?iri=" + encodeURIComponent(iri);
+    return $http({
+      "method": "GET",
+      "url": url,
+      "headers": {
+        "Accept": MIME_TYPE_JSON_LD,
+      },
+    });
+  }
+
+  function downloadFullPipelinePublic($http, iri) {
+    const url = "/api/v2/pipelines/full-public?iri=" + encodeURIComponent(iri);
+    return $http({
+      "method": "GET",
+      "url": url,
+      "headers": {
+        "Accept": MIME_TYPE_JSON_LD,
+      },
+    });
+  }
+
+  function importFromIri($http, iri, updateTemplates) {
+    return $http({
+      "method": "GET",
+      "url": iri,
+      "headers": {
+        "Accept": MIME_TYPE_JSON_LD,
+      },
+    }).then(response => response.data)
+      .then(pipeline => importPipeline(
+        $http, pipeline, "application/ld+json", "pipeline.jsonld",
+        updateTemplates)
+      );
+  }
+
+  function importPipeline(
+    $http, pipeline, pipelineMimeType, pipelineFileName, updateTemplates
+  ) {
+    // TODO Merge with localize pipeline
+    const formData = new FormData();
+
     const options = {
-      "@id": "http://localhost/options",
-      "@type": "http://linkedpipes.com/ontology/UpdateOptions",
-      "http://etl.linkedpipes.com/ontology/local": true,
-      "http://www.w3.org/2004/02/skos/core#prefLabel": label,
+      "@type": "http://linkedpipes.com/ontology/ImportOptions",
+      "http://etl.linkedpipes.com/ontology/importTemplates": true,
+      "http://etl.linkedpipes.com/ontology/updateTemplates": updateTemplates,
     };
-    form.append("options",
-      new Blob([JSON.stringify(options)], {
-        "type": "application/ld+json"
-      }), "options.jsonld");
-    const config = {
+    formData.append("option", new Blob([JSON.stringify(options)], {
+      "type": MIME_TYPE_JSON_LD
+    }), "options.jsonld");
+
+    formData.append("pipeline", new Blob([JSON.stringify(pipeline)], {
+      "type": pipelineMimeType
+    }), pipelineFileName);
+
+    const url = "./api/v2/pipelines/import";
+    const postConfiguration = {
+      // Do not transform data.
       "transformRequest": angular.identity,
       "headers": {
         // By this angular add Content-Type itself.
         "Content-Type": undefined,
-        "accept": "application/ld+json"
+        "accept": MIME_TYPE_JSON_LD,
       }
     };
-    return $http.post("./resources/pipelines", form, config)
-      .then((response) => {
-        const jsonld = response.data;
-        return jsonld[0]["@graph"][0]["@id"];
-      });
+    return $http.post(url, formData, postConfiguration)
+      .then(response => response.data)
+      // TODO We should actually load the pipelines here, it use pipeline list.
+      .then(jsonld => jsonld[0]["@id"]);
+  }
+
+  function importFromFile($http, formFile, updateTemplates) {
+    return loadFromFile(formFile)
+      .then(pipeline => importPipeline(
+        $http, pipeline, undefined, formFile.name, updateTemplates))
   }
 
   return {
     "executePipeline": executePipeline,
-    "create": createPipeline,
-    "copy": copyPipeline,
+    "createEmptyPipeline": createEmptyPipeline,
+    "copyPipelineFromIri": copyPipelineFromIri,
     "asLocalFromIri": asLocalFromIri,
     "asLocalFromFile": asLocalFromFile,
     "loadLocal": loadLocal,
     "deletePipeline": deletePipeline,
     "savePipeline": savePipeline,
-    "createPipelineFromData": createPipelineFromData
+    "copyPipelineFromData": copyPipelineFromData,
+    "downloadFullPipeline": downloadFullPipeline,
+    "downloadFullPipelinePublic": downloadFullPipelinePublic,
+    "importFromIri": importFromIri,
+    "importFromFile": importFromFile,
   }
 
 });

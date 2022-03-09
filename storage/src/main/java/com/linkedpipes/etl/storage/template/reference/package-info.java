@@ -1,5 +1,5 @@
 /**
- * Reference templates are use to overload settings for plugin templates. As
+ * Reference templates are used to overload settings for plugin templates. As
  * such they can be created, updated and deleted. Each reference template has
  * a definition and a configuration.
  */

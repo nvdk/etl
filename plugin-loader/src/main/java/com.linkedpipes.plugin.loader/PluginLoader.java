@@ -34,7 +34,10 @@ public class PluginLoader {
 
     private static final String LP_ETL_PREFIX = "LP-ETL/";
 
-    private static final String V_1_TEMPLATE_PREFIX = "template";
+    /**
+     * Name of a directory with template definitions.
+     */
+    private static final String TEMPLATE_PREFIX = "template/";
 
     private static final String DIALOG_PREFIX = "dialog/";
 
@@ -67,7 +70,7 @@ public class PluginLoader {
     private static final Logger LOG =
             LoggerFactory.getLogger(PluginLoader.class);
 
-    public List<PluginJarFile> loadPlugin(File file)
+    public List<Plugin> loadPlugin(File file)
             throws PluginLoaderException {
         JarFile jarFile = loadJarFile(file);
         Map<String, JarEntry> entries = loadJarEntries(jarFile);
@@ -76,9 +79,8 @@ public class PluginLoader {
             LOG.info("Missing JAR file specification for: {}", file);
             return Collections.emptyList();
         }
-        List<PluginJarFile> result = new ArrayList<>();
-        result.add(createJarFile(
-                file, jarFile, jar, entries, V_1_TEMPLATE_PREFIX));
+        List<Plugin> result = new ArrayList<>();
+        result.add(createJarFile(file, jarFile, jar, entries, TEMPLATE_PREFIX));
         return result.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -122,12 +124,12 @@ public class PluginLoader {
         return null;
     }
 
-    private PluginJarFile createJarFile(
+        private Plugin createJarFile(
             File file, JarFile jarFile, Resource jar,
-            Map<String, JarEntry> allEntries, String prefix)
+            Map<String, JarEntry> jarEntries, String templatePrefix)
             throws PluginLoaderException {
         Map<String, JarEntry> entries =
-                filterByPrefix(allEntries, prefix + "/");
+                withPrefixRemoved(jarEntries, templatePrefix);
         // Load all data.
         List<Statement> definition =
                 readAsStatements(
@@ -145,16 +147,16 @@ public class PluginLoader {
         Resource plugin = findPlugin(definition);
         if (plugin == null) {
             throw new PluginLoaderException(
-                    "Can't find plugin definition for:", prefix);
+                    "Can't find plugin definition for:", templatePrefix);
         }
         // Find dialog entries.
         Map<String, JarEntry> dialogEntries =
-                filterByPrefix(entries, DIALOG_PREFIX);
+                withPrefix(entries, DIALOG_PREFIX);
         // Update definition.
         Set<String> dialogs = collectDialogNames(dialogEntries.keySet());
         definition.addAll(createDefinitionForDialogs(plugin, dialogs));
         // Return result.
-        return new PluginJarFile(
+        return new Plugin(
                 file,
                 jarFile,
                 jar.stringValue(),
@@ -166,16 +168,28 @@ public class PluginLoader {
         );
     }
 
-    private Map<String, JarEntry> filterByPrefix(
+    /**
+     * Return values for keys that have given prefix. The key
+     * is stripped of the prefix.
+     */
+    private Map<String, JarEntry> withPrefixRemoved(
             Map<String, JarEntry> entries, String prefix) {
-        int prefixSize = prefix.length();
         return entries.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey().startsWith(prefix))
                 .collect(Collectors.toMap(
-                        entry -> entry.getKey().substring(prefixSize),
-                        Map.Entry::getValue
-                ));
+                        entry -> entry.getKey().substring(prefix.length()),
+                        Map.Entry::getValue));
+    }
+
+    private Map<String, JarEntry> withPrefix(
+            Map<String, JarEntry> entries, String prefix) {
+        return entries.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().startsWith(prefix))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue));
     }
 
     private JarEntry selectByPrefix(
@@ -275,9 +289,9 @@ public class PluginLoader {
     }
 
     public void copyFile(
-            PluginJarFile plugin, JarEntry entry, File destination)
+            Plugin plugin, JarEntry entry, File destination)
             throws PluginLoaderException {
-        JarFile jarFile = loadJarFile(plugin.getFile());
+        JarFile jarFile = loadJarFile(plugin.file);
         try (InputStream stream = jarFile.getInputStream(entry)) {
             FileUtils.copyInputStreamToFile(stream, destination);
         } catch (IOException ex) {

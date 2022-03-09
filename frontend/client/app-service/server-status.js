@@ -17,7 +17,7 @@ function loadStatus() {
     return;
   }
   status.fetching = true;
-  getJson("./api/v1/status").then((response) => {
+  getJson("./api/v2/status").then((response) => {
     status.loaded = true;
     status.fetching = false;
     status.label = response.payload["instance"]["label"];

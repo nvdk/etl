@@ -84,7 +84,7 @@
   function create(config) {
     return {
       "fetch": () => fetch(config),
-      "deleteById": deleteById,
+      "deleteById": (iri) => deleteById(config, iri),
       "incrementalUpdateSupport": false
     };
   }
@@ -97,8 +97,8 @@
       config.itemTemplate);
   }
 
-  function deleteById(id) {
-    const url = id;
+  function deleteById(config, iri) {
+    const url = config.url + "?iri=" + encodeURIComponent(iri);
     return http.delete(url);
   }
 

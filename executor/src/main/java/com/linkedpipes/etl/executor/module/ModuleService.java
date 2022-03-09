@@ -12,7 +12,7 @@ import com.linkedpipes.etl.executor.pipeline.Pipeline;
 import com.linkedpipes.etl.executor.rdf.RdfSourceWrap;
 import com.linkedpipes.etl.rdf.utils.RdfUtils;
 import com.linkedpipes.etl.rdf.utils.RdfUtilsException;
-import com.linkedpipes.plugin.loader.PluginJarFile;
+import com.linkedpipes.plugin.loader.Plugin;
 import com.linkedpipes.plugin.loader.PluginLoader;
 import com.linkedpipes.plugin.loader.PluginLoaderException;
 import org.osgi.framework.Bundle;
@@ -345,7 +345,7 @@ public class ModuleService implements ApplicationListener<ApplicationEvent> {
             if (!file.getPath().endsWith(".jar")) {
                 return;
             }
-            List<PluginJarFile> plugins;
+            List<Plugin> plugins;
             try {
                 plugins = loader.loadPlugin(file);
             } catch (PluginLoaderException ex) {
@@ -359,13 +359,13 @@ public class ModuleService implements ApplicationListener<ApplicationEvent> {
                 LOG.error("Can't load component bundle.", ex);
                 return;
             }
-            for (PluginJarFile plugin : plugins) {
+            for (Plugin plugin : plugins) {
                 LOG.info(
                         "Loaded component '{}' from '{}'",
-                        plugin.getPluginIri(), plugin.getJarIri());
+                        plugin.pluginIri, plugin.jarIri);
                 // As of now we store under JAR iri as a single
                 // JAr file can contain only one component.
-                components.put(plugin.getJarIri(), bundle);
+                components.put(plugin.pluginIri, bundle);
             }
         });
         // Start bundles.

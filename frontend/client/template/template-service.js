@@ -12,6 +12,7 @@
   const LP = vocabulary.LP;
   const SKOS = vocabulary.SKOS;
   const DCTERMS = vocabulary.DCTERMS;
+  const MIME_TYPE_JSON_LD = "application/ld+json";
 
   const DIALOG_LABELS = {
     "config": "Configuration",
@@ -50,6 +51,7 @@
     this.getDialogs = getDialogs;
     this.saveTemplate = updateTemplate; // TODO Rename
     this.getUsage = getUsage;
+    this.createTemplate = createTemplate;
   }
 
   service.$inject = ["$q", "$http"];
@@ -149,7 +151,7 @@
    * Configuration of a template instance.
    */
   function fetchTemplateConfig(iri) {
-    const url = "./api/v1/components/config?iri=" + encodeURI(iri);
+    const url = "./api/v2/components/stored-configuration?iri=" + encodeURI(iri);
     return fetchJsonLd(iri, url);
   }
 
@@ -182,7 +184,7 @@
    */
   function fetchConfigForNewInstance(iri) {
     const id = "new:" + iri;
-    const url = "./api/v1/components/configTemplate?iri=" + encodeURI(iri);
+    const url = "./api/v2/components/new-configuration?iri=" + encodeURI(iri);
     return fetchJsonLd(id, url);
   }
 
@@ -191,7 +193,7 @@
     // but this save some memory and traffic.
     const core = getCoreTemplate(iri);
     const id = "desc:" + core.id;
-    const url = "./api/v1/components/configDescription?iri=" +
+    const url = "./api/v2/components/configuration-description?iri=" +
       encodeURI(core.id);
     return fetchJsonLd(id, url);
   }
@@ -202,18 +204,16 @@
    */
   function fetchEffectiveConfig(iri) {
     const id = "effective:" + iri;
-    const url = "api/v1/components/effective?iri=" + encodeURI(iri);
+    const url = "api/v2/components/effective-configuration?iri="
+      + encodeURIComponent(iri);
     return fetchJsonLd(id, url);
   }
 
   function deleteTemplate(iri) {
     return $http({
       "method": "DELETE",
-      "url": iri
-    }).then(() => {
-      // TODO Update only affected templates
-      return forceLoad(true);
-    });
+      "url": "api/v2/components/?iri=" + encodeURIComponent(iri)
+    }).then(() => forceLoad());
   }
 
   function getDialogs(iri, forTemplate) {
@@ -237,10 +237,9 @@
         return;
       }
       //
-      const baseUrl = "api/v1/components/dialog" +
+      const baseUrl = "api/v2/components/file" +
         "?iri=" + encodeURIComponent(core.id) +
-        "&name=" + encodeURIComponent(name) +
-        "&file=";
+        "&path=dialog/" + encodeURIComponent(name) + "/";
       dialogs.push({
         "name": name,
         "label": getDialogLabel(name),
@@ -266,65 +265,81 @@
   }
 
   function updateTemplate(template, configuration) {
-    return saveConfiguration(template, configuration)
-      .then(() => saveTemplate(template))
-      .then(() => {
-        // TODO Update only affected templates.
-        // Update single template.
-        // Drop configurations of children.
-        forceLoad();
-      })
+    // const definition = {
+    //   "@graph": [
+    //     {
+    //       "@graph": template
+    //     },
+    //     {
+    //       "@graph": configuration,
+    //       "@id": "_:configuration"
+    //     },
+    //   ],
+    // };
+
+    console.log("Update template:\n", template, "\n", configuration);
+
+
+    throw new Error("NOT SUPPORTED");
+    // return saveConfiguration(template, configuration)
+    //   .then(() => saveTemplate(template))
+    //   .then(() => {
+    //     // TODO Update only affected templates.
+    //     // Update single template.
+    //     // Drop configurations of children.
+    //     forceLoad();
+    //   })
   }
 
-  function saveConfiguration(template, configuration) {
-    const form = new FormData();
-    form.append("configuration", new Blob(
-      [JSON.stringify(configuration)],
-      {"type": "application/ld+json"}),
-      "configuration.jsonld");
-    const url = "./api/v1/components/config?iri=" +
-      encodeURIComponent(template.id);
-    return $http.post(url, form, getPostJsonLdOptions());
-  }
+  // function saveConfiguration(template, configuration) {
+  //   const form = new FormData();
+  //   form.append("configuration", new Blob(
+  //     [JSON.stringify(configuration)],
+  //     {"type": "application/ld+json"}),
+  //     "configuration.jsonld");
+  //   const url = "./api/v1/components/config?iri=" +
+  //     encodeURIComponent(template.id);
+  //   return $http.post(url, form, getPostJsonLdOptions());
+  // }
 
-  function getPostJsonLdOptions() {
-    return {
-      "transformRequest": angular.identity,
-      "headers": {
-        "Content-Type": undefined,
-        "Accept": "application/ld+json"
-      }
-    };
-  }
+  // function saveTemplate(template) {
+  //   const updateRequestContent = buildTemplateUpdate(template);
+  //   const form = new FormData();
+  //   form.append("component", new Blob(
+  //       [JSON.stringify(updateRequestContent)],
+  //       {"type": "application/ld+json"}),
+  //     "component.jsonld");
+  //   const url = "./api/v1/components/component?iri=" +
+  //     encodeURIComponent(template.id);
+  //   return $http.post(url, form, getPostJsonLdOptions());
+  // }
 
-  function saveTemplate(template) {
-    const updateRequestContent = buildTemplateUpdate(template);
-    const form = new FormData();
-    form.append("component", new Blob(
-      [JSON.stringify(updateRequestContent)],
-      {"type": "application/ld+json"}),
-      "component.jsonld");
-    const url = "./api/v1/components/component?iri=" +
-      encodeURIComponent(template.id);
-    return $http.post(url, form, getPostJsonLdOptions());
-  }
+  // function getPostJsonLdOptions() {
+  //   return {
+  //     "transformRequest": angular.identity,
+  //     "headers": {
+  //       "Content-Type": undefined,
+  //       "Accept": "application/ld+json"
+  //     }
+  //   };
+  // }
 
-  function buildTemplateUpdate(template) {
-    const result = {
-      "@id": template.id
-    };
-    result[SKOS.PREF_LABEL] = template.label;
-    result[LP.HAS_COLOR] = template.color;
-    result[DCTERMS.DESCRIPTION] = template.description;
-    result[SKOS.NOTE] = template.note;
-    return result;
-  }
+  // function buildTemplateUpdate(template) {
+  //   const result = {
+  //     "@id": template.id
+  //   };
+  //   result[SKOS.PREF_LABEL] = template.label;
+  //   result[LP.HAS_COLOR] = template.color;
+  //   result[DCTERMS.DESCRIPTION] = template.description;
+  //   result[SKOS.NOTE] = template.note;
+  //   return result;
+  // }
 
   /**
    * Return usage of the template and all its descendants in pipelines.
    */
   function getUsage(iri) {
-    const url = "api/v1/usage?iri=" + encodeURI(iri);
+    const url = "api/v2/components/template-usage?iri=" + encodeURI(iri);
     const options = {"headers": {"Accept": "application/ld+json"}};
     return $http.get(url, options).then((response) => {
       const pipelines = {};
@@ -375,6 +390,22 @@
         });
       }
     }
+  }
+
+  /**
+   * Given JSON-LD object with configuration and definition,
+   * post the content to the server to create a new template.
+   */
+  function createTemplate(jsonld) {
+    return $http({
+      "method": "POST",
+      "url": "/api/v2/components/",
+      "headers": {
+        "Content-Type": MIME_TYPE_JSON_LD,
+        "Accept": MIME_TYPE_JSON_LD,
+      },
+      "data": jsonld
+    }).then(response => response.headers("location"));
   }
 
   let initialized = false;

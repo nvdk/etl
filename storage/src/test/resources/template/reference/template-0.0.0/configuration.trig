@@ -1,8 +1,0 @@
-@prefix httpGetFile: <http://plugins.linkedpipes.com/ontology/e-httpGetFile#> .
-
-<http://etl.linkedpipes.com/resources/components/e-httpGetFile/0.0.0/configuration> a httpGetFile:Configuration ;
-    httpGetFile:encodeUrl "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-    httpGetFile:encodeUrlControl <http://plugins.linkedpipes.com/resource/configuration/None> ;
-    httpGetFile:fileName "file-name" ;
-    httpGetFile:fileNameControl <http://plugins.linkedpipes.com/resource/configuration/None> ;
-.

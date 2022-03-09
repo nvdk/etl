@@ -1,0 +1,145 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix lp: <http://linkedpipes.com/ontology/> .
+@prefix lpc: <http://plugins.linkedpipes.com/ontology/configuration/> .
+@prefix th: <http://plugins.linkedpipes.com/ontology/e-textHolder#> .
+@prefix thc: <http://plugins.linkedpipes.com/ontology/configuration/> .
+
+
+<http://definition> {
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0>
+        a lp:JarTemplate ;
+        lp:componentType <http://etl.linkedpipes.com/ontology/component/type/Extractor> ;
+        lp:configurationDescription <http://linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration/desc> ;
+        lp:infoLink <https://etl.linkedpipes.com/components/e-textholder> ;
+        lp:jar <http://etl.linkedpipes.com/resources/jars/e-textHolder/0.0.0> ;
+        lp:keyword
+            "file" ,
+            "text" ;
+        skos:prefLabel "Text holder" ;
+        lp:color "#F6D8CE" ;
+        lp:port <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dataUnit/output> ;
+        lp:requirement <http://linkedpipes.com/resources/requirement/workingDirectory> ;
+        lp:supportControl true ;
+    .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dataUnit/output>
+        a lp:Output , <http://linkedpipes.com/ontology/dataUnit/system/1.0/files/DirectoryMirror> ;
+        skos:prefLabel "Output" ;
+        lp:binding "FilesOutput" ;
+        lp:requirement <http://linkedpipes.com/resources/requirement/workingDirectory> ;
+    .
+
+}
+
+<http://configuration> {
+
+    _:
+        a thc:Configuration ;
+        thc:content "" ;
+        thc:contentControl <http://plugins.linkedpipes.com/resource/configuration/None> ;
+        thc:fileName "" ;
+        thc:fileNameControl  <http://plugins.linkedpipes.com/resource/configuration/None> ;
+    .
+
+}
+
+<http://configuration-description> {
+
+    <http://example>
+        a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
+        lpc:type thc:Configuration ;
+        lpc:member
+            [
+                    a lpc:ConfigurationMember ;
+                    lpc:property thc:fileName ;
+                    lpc:control thc:fileNameControl ;
+            ] ,
+            <http://example/10> ;
+    .
+
+    <http://example/10>
+        a lpc:ConfigurationMember ;
+        lpc:property thc:content ;
+        lpc:control thc:contentControl ;
+    .
+
+}
+
+<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0> {
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0>
+        a lp:JarTemplate ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Text holder" ;
+        lp:keyword "file", "text" ;
+        lp:color "#F6D8CE" ;
+        lp:componentType <http://etl.linkedpipes.com/ontology/component/type/Extractor> ;
+        lp:configurationGraph <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration> ;
+        lp:configurationDescription <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description> ;
+        lp:infoLink <https://etl.linkedpipes.com/components/e-textholder> ;
+        lp:supportControl "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+        lp:port <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/port/FilesOutput> ;
+        lp:jar <http://etl.linkedpipes.com/resources/jars/e-textHolder/0.0.0> ;
+        lp:requirement <http://linkedpipes.com/resources/requirement/workingDirectory> ;
+        lp:dialog
+              <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/template> ,
+              <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/instance> ,
+              <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/config> ;
+    .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/port/FilesOutput>
+        a lp:Output, <http://linkedpipes.com/ontology/dataUnit/system/1.0/files/DirectoryMirror> ;
+        lp:binding "FilesOutput" ;
+        skos:prefLabel "Output" ;
+        lp:requirement <http://linkedpipes.com/resources/requirement/workingDirectory> ;
+    .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/template>
+        a lp:Dialog ;
+        lp:name "template" .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/instance>
+        a lp:Dialog ;
+        lp:name "instance" .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/dialog/config>
+        a lp:Dialog ;
+        lp:name "config" .
+
+}
+
+<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration> {
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration/000>
+        a thc:Configuration ;
+        thc:content "" ;
+        thc:contentControl <http://plugins.linkedpipes.com/resource/configuration/None> ;
+        thc:fileName "" ;
+        thc:fileNameControl  <http://plugins.linkedpipes.com/resource/configuration/None> ;
+    .
+
+}
+
+<http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description> {
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description>
+        a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
+        lpc:type thc:Configuration ;
+        lpc:member
+            <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/000> ,
+            <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/001> ;
+    .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/000>
+        a lpc:ConfigurationMember ;
+        lpc:property thc:fileName ;
+        lpc:control thc:fileNameControl ;
+    .
+
+    <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/configuration-description/001>
+        a lpc:ConfigurationMember ;
+        lpc:property thc:content ;
+        lpc:control thc:contentControl ;
+    .
+
+}

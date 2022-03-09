@@ -1,6 +1,8 @@
 package com.linkedpipes.etl.plugin.configuration;
 
 import com.linkedpipes.etl.executor.api.v1.vocabulary.LP_OBJECTS;
+import com.linkedpipes.etl.plugin.configuration.model.ConfigurationDescription;
+import com.linkedpipes.etl.plugin.configuration.rdf.StatementsUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -30,28 +32,29 @@ class CreateNewConfiguration {
 
     public List<Statement> createNewFromJarFile(
             List<Statement> configuration,
-            ConfigurationDescriptionDefinition description,
-            String baseIri, IRI graph) {
+            ConfigurationDescription description,
+            String baseIri, Resource graph) {
         return createNew(configuration, description,
                 baseIri, graph, CONTROL_NONE);
     }
 
     public List<Statement> createNewFromTemplate(
             List<Statement> configuration,
-            ConfigurationDescriptionDefinition description,
-            String baseIri, IRI graph) {
+            ConfigurationDescription description,
+            String baseIri, Resource graph) {
         return createNew(configuration, description,
                 baseIri, graph, CONTROL_INHERIT);
     }
 
     private List<Statement> createNew(
             List<Statement> configuration,
-            ConfigurationDescriptionDefinition description,
-            String baseIri, IRI graph, IRI defaultControl) {
+            ConfigurationDescription description,
+            String baseIri, Resource graph,
+            IRI defaultControl) {
         int counter = 1;
         Map<Resource, List<Statement>> entities = splitBySubject(configuration);
         for (var entry : entities.entrySet()) {
-            if (!isOfType(entry.getValue(), description.forConfigurationType)) {
+            if (!isOfType(entry.getValue(), description.configurationType)) {
                 continue;
             }
             replaceControls(
@@ -93,7 +96,7 @@ class CreateNewConfiguration {
 
     private void replaceControls(
             List<Statement> statements,
-            ConfigurationDescriptionDefinition description,
+            ConfigurationDescription description,
             Resource resource, IRI defaultControl) {
         // Prepare array with default values.
         Map<IRI, Value> controls =
@@ -105,9 +108,9 @@ class CreateNewConfiguration {
     }
 
     private Map<IRI, Value> createDefaultControls(
-            ConfigurationDescriptionDefinition description, IRI defaultControl) {
+            ConfigurationDescription description, IRI defaultControl) {
         Map<IRI, Value> result = new HashMap<>();
-        for (ConfigurationDescriptionDefinition.Member member :
+        for (ConfigurationDescription.Member member :
                 description.members) {
             result.put(member.controlProperty, defaultControl);
         }

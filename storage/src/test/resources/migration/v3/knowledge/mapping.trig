@@ -1,0 +1,4 @@
+
+<http://etl.linkedpipes.com/resources/plugins/mapping> {
+	<http://linkedpipes.com/component> <http://www.w3.org/2002/07/owl#sameAs> <http://localhost:8080/resources/components/1621880885677-0ead2138-65f0-4776-91eb-4ff6a7234316> .
+}

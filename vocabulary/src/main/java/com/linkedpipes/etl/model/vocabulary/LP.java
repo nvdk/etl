@@ -262,7 +262,7 @@ public final class LP {
             "http://etl.linkedpipes.com/resource/UnknownPipeline";
 
     public static final String PIPELINE =
-            "http://etl.linkedpipes.com/ontology/Pipeline";
+            "http://linkedpipes.com/ontology/Pipeline";
 
     public static final String HAS_PART =
             "http://etl.linkedpipes.com/ontology/part";
@@ -841,4 +841,14 @@ public final class LP {
     public static final String HAS_PORT =
             "http://etl.linkedpipes.com/ontology/port";
 
+    public static final String PIPELINE_INFORMATION =
+            "http://linkedpipes.com/ontology/PipelineInformation";
+
+    public static final String HAS_FREQUENCY =
+            "http://etl.linkedpipes.com/ontology/frequency";
+
+    public static final String MAPPING_GRAPH =
+            "http://etl.linkedpipes.com/resources/plugins/mapping";
+
 }
+

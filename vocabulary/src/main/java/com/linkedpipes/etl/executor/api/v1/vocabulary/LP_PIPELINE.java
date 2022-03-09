@@ -245,7 +245,12 @@ public final class LP_PIPELINE {
     public static final String HAS_KNOWN_AS  =
             "http://www.w3.org/2002/07/owl#sameAs";
 
-    public static final String HAS_ROOT  =
-            "http://linkedpipes.com/ontology/root";
+    public static final String HAS_PLUGIN_TEMPLATE =
+            "http://linkedpipes.com/ontology/pluginTemplate";
 
+    public static final String HAS_X  =
+            "http://linkedpipes.com/ontology/x";
+
+    public static final String HAS_Y  =
+            "http://linkedpipes.com/ontology/y";
 }

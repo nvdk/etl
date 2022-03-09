@@ -1,15 +1,19 @@
 const logger = require("./logging");
-const config = require("./configuration");
+const configuration = require("./configuration");
 
 function initialize(app) {
-  app.use("/api/v1/", require("./routes/api"));
-  app.use("/resources/components", require("./routes/components"));
-  app.use("/resources/pipelines", require("./routes/pipelines"));
-  app.use("/resources/executions", require("./routes/executions"));
+  app.use("/api/v2/", require("./routes/api-v2"));
+  app.use("/api/v2/components", require("./routes/api-v2-components"));
+  app.use("/api/v2/executions", require("./routes/api-v2-executions"));
+  app.use("/api/v2/pipelines", require("./routes/api-v2-pipelines"));
+
+  app.use("/resources/components", require("./routes/resources-components"));
+  app.use("/resources/executions", require("./routes/resources-executions"));
+  app.use("/resources/pipelines", require("./routes/resources-pipelines"));
 }
 
 function start(app) {
-  const port = config.port;
+  const port = configuration.port;
   app.listen(port, (error) => {
     if (error) {
       logger.error("Can't start server: ", error);

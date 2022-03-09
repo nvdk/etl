@@ -1,0 +1,68 @@
+@prefix lp: <http://linkedpipes.com/ontology/> .
+@prefix etl: <http://etl.linkedpipes.com/ontology/> .
+
+# Pipelines.
+
+<http://localhost:8080/resources/pipelines/1621937390630> {
+  <http://localhost:8080/resources/pipelines/1621937390630> a lp:Pipeline;
+    <http://etl.linkedpipes.com/ontology/version> "2"^^<http://www.w3.org/2001/XMLSchema#int>;
+    lp:profile <http://localhost:8080/resources/pipelines/1621937390630/profile/default>;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Pipeline" .
+
+  <http://localhost:8080/resources/pipelines/1621937390630/profile/default> a lp:ExecutionProfile;
+    lp:rdfRepositoryPolicy <http://linkedpipes.com/ontology/repository/SingleRepository>;
+    lp:rdfRepositoryType <http://linkedpipes.com/ontology/repository/NativeStore> .
+
+  <http://localhost:8080/resources/pipelines/1621937390630/component/266b-a54f> a lp:Component;
+    lp:configurationGraph <http://localhost:8080/resources/pipelines/1621937390630/component/266b-a54f/configuration>;
+    lp:template <http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c>;
+    lp:x 196;
+    lp:y 96;
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Text holder" .
+}
+
+<http://localhost:8080/resources/pipelines/1621937390630/component/266b-a54f/configuration> {
+  <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0/new/1> a <http://plugins.linkedpipes.com/ontology/e-textHolder#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#content> "";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#contentControl> <http://plugins.linkedpipes.com/resource/configuration/None>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileName> "";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileNameControl> <http://plugins.linkedpipes.com/resource/configuration/None> .
+}
+
+# References.
+
+<http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3/configuration> {
+  <http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3/configuration>
+    a <http://plugins.linkedpipes.com/ontology/e-textHolder#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#content> "";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#contentControl> <http://plugins.linkedpipes.com/resource/configuration/None>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileName> "file.ttl";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileNameControl> <http://plugins.linkedpipes.com/resource/configuration/Force> .
+}
+
+<http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3> {
+  <http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3>
+    a lp:Template;
+    etl:version "4"^^<http://www.w3.org/2001/XMLSchema#int> ; # Default version is added.
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Turtle holder";
+    lp:template <http://etl.linkedpipes.com/resources/components/e-textHolder/0.0.0>;
+    lp:configurationGraph <http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3/configuration> .
+}
+
+<http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c/configuration> {
+  <http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c/configuration/0>
+    a <http://plugins.linkedpipes.com/ontology/e-textHolder#Configuration>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#content> "<http://localhost/resource> a <http://localhost/Type> .";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#contentControl> <http://plugins.linkedpipes.com/resource/configuration/Force>;
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileName> "";
+    <http://plugins.linkedpipes.com/ontology/e-textHolder#fileNameControl> <http://plugins.linkedpipes.com/resource/configuration/None> .
+}
+
+<http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c> {
+  <http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c>
+    a lp:Template;
+    etl:version "4"^^<http://www.w3.org/2001/XMLSchema#int> ; # Default version is added.
+    <http://www.w3.org/2004/02/skos/core#prefLabel> "Type holder";
+    lp:template <http://localhost:8080/resources/components/1621937417354-2fd32ec7-ed52-4013-bf2b-0ba950f044c3>;
+    lp:configurationGraph <http://localhost:8080/resources/components/1621937467650-899a4740-78e7-4ef5-a1ee-3fbc4c2a0b1c/configuration> .
+}

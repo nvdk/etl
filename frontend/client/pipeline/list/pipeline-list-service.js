@@ -51,20 +51,13 @@
     }
 
     function createPipeline() {
-      pipelineApi.create($http)
-        .then(redirectToPipelineDetail)
-        .catch(handleCreatePipelineFailure);
-    }
-
-    function redirectToPipelineDetail(response) {
-      const iri = response.data[0]["@graph"][0]["@id"];
-      $location.path("/pipelines/edit/canvas").search({
-        "pipeline": iri
-      });
-    }
-
-    function handleCreatePipelineFailure(response) {
-      $status.httpError("Can't create the pipeline.", response);
+      pipelineApi.createEmptyPipeline($http)
+        .then(iri => {
+          $location.path("/pipelines/edit/canvas").search({"pipeline": iri});
+        })
+        .catch(response => {
+          $status.httpError("Can't create the pipeline.", response);
+        });
     }
 
     function redirectToPipelineUpload() {
@@ -76,8 +69,7 @@
     }
 
     function copyPipeline(pipeline) {
-      // TODO As we remove $http we need to notify $scope manually.
-      pipelineApi.copy($http, pipeline)
+      pipelineApi.copyPipelineFromIri($http, pipeline.iri)
         .then(handleCopyPipelineSuccess)
         .catch(reportCopyPipelineFailure)
     }

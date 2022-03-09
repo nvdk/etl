@@ -2,10 +2,10 @@
   if (typeof define === "function" && define.amd) {
     define([
       "../../app-service/vocabulary",
-      "angular"
+      "../pipeline-api",
     ], definition);
   }
-})((vocabulary, angular) => {
+})((vocabulary, pipelines) => {
 
   function factory($http, $timeout, $location, $status, $templates) {
 
@@ -16,16 +16,13 @@
       //
       $scope.fileReady = false;
       $scope.uploading = false;
-      $scope.log = "";
       $scope.type = "file";
-      $scope.importTemplates = true;
       $scope.updateTemplates = false;
     }
 
     function onWatchFile() {
       if (!$scope.file) {
         $scope.fileReady = false;
-        return;
       } else if ($scope.file.$error) {
         $scope.fileReady = false;
       } else {
@@ -43,71 +40,36 @@
       } else if ($scope.type === "url") {
         importUrl();
       } else {
-        console.log("Unknown type.");
+        console.log("Unknown import type:", $scope.type);
       }
     }
 
     function importFile() {
-      const data = new FormData();
-      const options = createImportOptions();
-      data.append("options", new Blob([JSON.stringify(options)], {
-        "type": "application/ld+json"
-      }), "options.jsonld");
-      data.append("pipeline", $scope.file);
-      const url = "./resources/pipelines";
-      postFormData(url, data);
-    }
-
-    function createImportOptions() {
-      return {
-        "@id": "http://localhost/options",
-        "@type": "http://linkedpipes.com/ontology/UpdateOptions",
-        "http://etl.linkedpipes.com/ontology/local": "false",
-        "http://etl.linkedpipes.com/ontology/importTemplates": $scope.importTemplates,
-        "http://etl.linkedpipes.com/ontology/updateTemplates": $scope.updateTemplates
-      };
-    }
-
-    function postFormData(url, data) {
-      const config = {
-        "transformRequest": angular.identity,
-        "headers": {
-          // Content-Type is set by Angular.
-          "Content-Type": undefined,
-          "accept": "application/ld+json"
-        }
-      };
-      $http.post(url, data, config).then((response) => {
-        reloadTemplates().then(() => {
-          redirectToPipeline(response);
-        }).catch(() => {
-          $status.httpError("Can't update templates.", response);
-          redirectToPipeline(response);
-        });
-      }, (error) => {
-        $status.httpError("Can't copy pipeline.", error);
-      });
+      pipelines.importFromFile($http, $scope.file, $scope.updateTemplates)
+        .then((iri) => {
+          reloadTemplates()
+            .catch((err) => $status.httpError("Can't update templates.", err))
+            .then(() => redirectToPipeline(iri));
+        })
+        .catch(error => $status.httpError("Can't copy pipeline.", error));
     }
 
     function reloadTemplates() {
       return $templates.forceLoad();
     }
 
-    function redirectToPipeline(response) {
-      $location.path("/pipelines/edit/canvas").search({
-        "pipeline": response.data[0]["@graph"][0]["@id"]
-      });
+    function redirectToPipeline(iri) {
+      $location.path("/pipelines/edit/canvas").search({"pipeline": iri});
     }
 
     function importUrl() {
-      const data = new FormData();
-      const options = createImportOptions();
-      data.append("options", new Blob([JSON.stringify(options)], {
-        "type": "application/ld+json"
-      }), "options.jsonld");
-      const url = "./resources/pipelines?pipeline=" +
-        encodeURIComponent($scope.url);
-      postFormData(url, data);
+      pipelines.importFromIri($http, $scope.url, $scope.updateTemplates)
+        .then((iri) => {
+          reloadTemplates()
+            .catch((err) => $status.httpError("Can't update templates.", err))
+            .then(() => redirectToPipeline(iri));
+        })
+        .catch(error => $status.httpError("Can't copy pipeline.", error));
     }
 
     return {

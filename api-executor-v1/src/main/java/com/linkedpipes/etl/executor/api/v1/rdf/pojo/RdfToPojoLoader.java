@@ -45,8 +45,8 @@ public class RdfToPojoLoader {
     public static void loadByReflection(
             RdfSource source, String resource, Object entity)
             throws RdfException {
-        ReflectionLoader entityWrap = new ReflectionLoader(entity);
-        load(source, resource, entityWrap);
+        ReflectionLoader entityOptional = new ReflectionLoader(entity);
+        load(source, resource, entityOptional);
     }
 
 }

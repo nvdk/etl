@@ -49,6 +49,10 @@
             <groupId>com.linkedpipes</groupId>
             <artifactId>vocabulary</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.linkedpipes</groupId>
+            <artifactId>plugin-configuration</artifactId>
+        </dependency>
         <!-- RDF4J -->
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>

@@ -1,6 +1,8 @@
 package com.linkedpipes.etl.plugin.configuration;
 
 import com.linkedpipes.etl.model.vocabulary.LP;
+import com.linkedpipes.etl.plugin.configuration.model.ConfigurationDescription;
+import com.linkedpipes.etl.plugin.configuration.rdf.StatementsUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -8,8 +10,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MergeConfiguration {
+class MergeConfiguration {
 
     /**
      * Store all statements connected to the described entity via
@@ -31,16 +31,13 @@ public class MergeConfiguration {
 
         public List<Statement> statements = new ArrayList<>();
 
-        public final ConfigurationDescriptionDefinition.Member member;
+        public final ConfigurationDescription.Member member;
 
-        public PredicateTree(ConfigurationDescriptionDefinition.Member member) {
+        public PredicateTree(ConfigurationDescription.Member member) {
             this.member = member;
         }
 
     }
-
-    private static final Logger LOG =
-            LoggerFactory.getLogger(MergeConfiguration.class);
 
     private static final Set<IRI> ESSENTIAL_PREDICATES = new HashSet<>();
 
@@ -53,8 +50,8 @@ public class MergeConfiguration {
     public List<Statement> merge(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            ConfigurationDescriptionDefinition description,
-            String baseIri, IRI graph) throws InvalidConfiguration {
+            ConfigurationDescription description,
+            String baseIri, Resource graph) throws InvalidConfiguration {
         List<Statement> result;
         if (description.globalControlProperty == null) {
             result = mergeMemberControlled(
@@ -69,7 +66,7 @@ public class MergeConfiguration {
     private List<Statement> mergeGloballyControlled(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            ConfigurationDescriptionDefinition description, String baseIri
+            ConfigurationDescription description, String baseIri
     ) throws InvalidConfiguration {
         Resource parentResource = findEntity(parentRdf, description);
         Resource instanceResource = findEntity(instanceRdf, description);
@@ -86,13 +83,13 @@ public class MergeConfiguration {
 
     private Resource findEntity(
             List<Statement> statements,
-            ConfigurationDescriptionDefinition description) {
+            ConfigurationDescription description) {
         for (Statement statement : statements) {
             if (!statement.getPredicate().equals(RDF.TYPE)) {
                 continue;
             }
             if (statement.getObject().equals(
-                    description.forConfigurationType)) {
+                    description.configurationType)) {
                 return statement.getSubject();
             }
         }
@@ -124,7 +121,7 @@ public class MergeConfiguration {
     }
 
     private String getGlobalControl(
-            ConfigurationDescriptionDefinition description,
+            ConfigurationDescription description,
             List<Statement> statements,
             Resource resource) {
         for (Statement statement : statements) {
@@ -143,7 +140,7 @@ public class MergeConfiguration {
     private List<Statement> mergeGlobal(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            ConfigurationDescriptionDefinition description,
+            ConfigurationDescription description,
             Resource parentResource,
             Resource instanceResource,
             String parentControl,
@@ -222,18 +219,18 @@ public class MergeConfiguration {
     private List<Statement> mergeMemberControlled(
             List<Statement> parentRdf,
             List<Statement> instanceRdf,
-            ConfigurationDescriptionDefinition description,
+            ConfigurationDescription description,
             String baseIri
     ) throws InvalidConfiguration {
         Resource parentResource = findEntity(parentRdf, description);
         Resource instanceResource = findEntity(instanceRdf, description);
-        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> parent =
+        Map<ConfigurationDescription.Member, PredicateTree> parent =
                 loadTreesForPredicates(description, parentRdf, parentResource);
-        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> instance =
+        Map<ConfigurationDescription.Member, PredicateTree> instance =
                 loadTreesForPredicates(
                         description, instanceRdf, instanceResource);
         List<Statement> result = selectEssentials(parentRdf, parentResource);
-        for (ConfigurationDescriptionDefinition.Member member :
+        for (ConfigurationDescription.Member member :
                 description.members) {
             PredicateTree parentTree = parent.get(member);
             PredicateTree instanceTree = instance.get(member);
@@ -247,16 +244,16 @@ public class MergeConfiguration {
         return result;
     }
 
-    private Map<ConfigurationDescriptionDefinition.Member, PredicateTree>
+    private Map<ConfigurationDescription.Member, PredicateTree>
     loadTreesForPredicates(
-            ConfigurationDescriptionDefinition description,
+            ConfigurationDescription description,
             List<Statement> statements,
             Resource resource) {
-        Map<ConfigurationDescriptionDefinition.Member, PredicateTree> result =
+        Map<ConfigurationDescription.Member, PredicateTree> result =
                 new HashMap<>();
         Map<IRI, PredicateTree> dataPredicates = new HashMap<>();
         Map<IRI, PredicateTree> controlPredicates = new HashMap<>();
-        for (ConfigurationDescriptionDefinition.Member member :
+        for (ConfigurationDescription.Member member :
                 description.members) {
             PredicateTree predicateTree = new PredicateTree(member);
             result.put(member, predicateTree);

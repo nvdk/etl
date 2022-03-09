@@ -10,7 +10,8 @@ define([
     "template": "http://linkedpipes.com/ontology/template",
     "color": "http://linkedpipes.com/ontology/color",
     "configurationGraph": "http://linkedpipes.com/ontology/configurationGraph",
-    "control": "http://plugins.linkedpipes.com/ontology/configuration/control"
+    "control": "http://plugins.linkedpipes.com/ontology/configuration/control",
+    "version": "http://etl.linkedpipes.com/ontology/version",
   };
 
   const SKOS = {
@@ -24,7 +25,7 @@ define([
 
   function controller(
     $scope, $http, $mdDialog, $templates, $status,
-    component, template, configuration) {
+    component, componentTemplate, configuration) {
 
     $scope.api = {};
 
@@ -36,16 +37,13 @@ define([
       $scope.api.save();
 
       const promise = createTemplate(
-        $http, $scope.templateToEdit, template,
+        $http, $scope.templateToEdit, componentTemplate,
         $scope.configuration, $templates)
         .then((response) => {
           $status.success("Template created.");
           return response;
         })
-        .catch((error) => {
-          $status.error("Can't create template.", error);
-          return {};
-        });
+        .catch((error) => $status.error("Can't create template.", error));
       $mdDialog.hide(promise);
     };
 
@@ -63,18 +61,18 @@ define([
         "note": jsonld.r.getPlainString(component, SKOS.note)
       };
 
-      $scope.infoLink = template._coreReference.infoLink;
+      $scope.infoLink = componentTemplate._coreReference.infoLink;
 
       // Construct a new temporary template object.
-      $scope.component = jQuery.extend({}, template,
+      $scope.component = jQuery.extend({}, componentTemplate,
         {
-          "id": template.id,
-          "template": template.id,
+          "id": componentTemplate.id,
+          "template": componentTemplate.id,
         });
 
       $scope.configuration = jQuery.extend(true, [], configuration);
       if ($scope.configuration === undefined) {
-        $templates.fetchNewConfig(template.id).then((config) => {
+        $templates.fetchNewConfig(componentTemplate.id).then((config) => {
           $scope.configuration = jQuery.extend(true, [], config);
           initializeDirective();
         });
@@ -117,50 +115,38 @@ define([
   }
 
   function createTemplate(
-    $http, template, parent, configuration, $templates) {
+    $http, newTemplate, newTemplateParent, configuration, $templates) {
 
     const resource = {
       "@type": ["http://linkedpipes.com/ontology/Template"]
     };
-    jsonld.r.setStrings(resource, SKOS.prefLabel, template.label);
-    jsonld.r.setStrings(resource, DCTERMS.description, template.description);
-    jsonld.r.setIRIs(resource, LP.template, parent.id);
-    if (template.color !== undefined) {
-      jsonld.r.setStrings(resource, LP.color, template.color);
+    jsonld.r.setStrings(resource, SKOS.prefLabel, newTemplate.label);
+    jsonld.r.setStrings(resource, DCTERMS.description, newTemplate.description);
+    jsonld.r.setIRIs(resource, LP.template, newTemplateParent.id);
+    if (newTemplate.color !== undefined) {
+      jsonld.r.setStrings(resource, LP.color, newTemplate.color);
     }
-    jsonld.r.setStrings(resource, SKOS.note, template.note);
-    return postNewTemplate($http, resource, configuration)
-      .then((response) => {
-        return $templates.forceLoad().then(() => {
-          return {
-            "template": response.data[0]["@graph"][0]["@id"],
-            "configuration": configuration
-          };
-        });
-      });
-  }
+    jsonld.r.setStrings(resource, SKOS.note, newTemplate.note);
+    jsonld.r.setIntegers(resource, LP.version, 5);
+    jsonld.r.setIRIs(resource, LP.configurationGraph, "_:configuration");
 
-  function postNewTemplate($http, template, configuration) {
-    const postConfiguration = {
-      "transformRequest": angular.identity,
-      "headers": {
-        "Content-Type": undefined,
-        "Accept": "application/ld+json"
-      }
+    const definition = {
+      "@graph": [
+        {"@graph": resource},
+        {
+          "@graph": configuration,
+          "@id": "_:configuration"
+        },
+      ],
     };
 
-    const form = new FormData();
-    form.append("component",
-      new Blob([JSON.stringify(template)], {
-        "type": "application/ld+json"
-      }), "component.jsonld");
-    form.append("configuration",
-      new Blob([JSON.stringify(configuration)], {
-        "type": "application/ld+json"
-      }), "configuration.jsonld");
-    return $http.post("./resources/components", form, postConfiguration)
-  }
+    return $templates.createTemplate(definition)
+      .then(iri => ({
+        "template": iri,
+        "configuration": configuration,
+      }));
 
+  }
 
   let _initialized = false;
   return function init(app) {

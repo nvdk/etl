@@ -58,6 +58,7 @@
         "DELETE_WORKING": LP + "deleteWorkingData",
         "HAS_TAG": ETL_LP + "tag",
         "PIPELINE": LP + "Pipeline",
+        "PIPELINE_LIST_ITEM":  "http://etl.linkedpipes.com/ontology/PipelineListItem",
         "TOMBSTONE" : LP + "Tombstone",
         "HAS_REPO_POLICY": LP + "rdfRepositoryPolicy",
         "HAS_REPO_TYPE": LP + "rdfRepositoryType",

@@ -218,12 +218,9 @@
     }
 
     function onDownload() {
-      const url = actions.getPipelineIri() +
-        "?templates=true" +
-        "&mappings=true" +
-        "&removePrivateConfig=false";
+      const iri = actions.getPipelineIri();
       actions.savePipeline().then(() => {
-        $http.get(url).then((response) => {
+        pipelines.downloadFullPipeline($http, iri).then((response) => {
           saveAs(createPipelineBlob(response.data),
             $scope.pipelineLabel + ".jsonld");
         });
@@ -231,12 +228,9 @@
     }
 
     function onDownloadNoCredentials() {
-      const url = actions.getPipelineIri() +
-        "?templates=true" +
-        "&mappings=true" +
-        "&removePrivateConfig=true";
+      const iri = actions.getPipelineIri();
       actions.savePipeline().then(() => {
-        $http.get(url).then((response) => {
+        pipelines.downloadFullPipelinePublic($http, iri).then((response) => {
           saveAs(createPipelineBlob(response.data),
             $scope.pipelineLabel + ".jsonld");
         });
@@ -245,9 +239,7 @@
 
     function onCopyPipeline() {
       $canvas.synchronize();
-      const pipeline = actions.asJsonLd();
-      const label = "Copy of " + $scope.pipelineLabel;
-      pipelines.createPipelineFromData($http, pipeline, label)
+      pipelines.copyPipelineFromData($http, actions.asJsonLd())
         .then((iri) => {
           $status.success("Pipeline has been successfully copied.");
           $location.path("/pipelines/edit/canvas")
@@ -279,22 +271,16 @@
     }
 
     function onDownloadNoSave() {
-      const url = actions.getPipelineIri() +
-        "?templates=true" +
-        "&mappings=true" +
-        "&removePrivateConfig=false";
-      $http.get(url).then((response) => {
+      const iri = actions.getPipelineIri();
+      pipelines.downloadFullPipeline($http, iri).then((response) => {
         saveAs(createPipelineBlob(response.data),
           $scope.pipelineLabel + ".jsonld");
       });
     }
 
     function onDownloadNoCredentialsNoSave() {
-      const url = actions.getPipelineIri() +
-        "?templates=true" +
-        "&mappings=true" +
-        "&removePrivateConfig=true";
-      $http.get(url).then((response) => {
+      const iri = actions.getPipelineIri();
+      pipelines.downloadFullPipelinePublic($http, iri).then((response) => {
         saveAs(createPipelineBlob(response.data),
           $scope.pipelineLabel + ".jsonld");
       });

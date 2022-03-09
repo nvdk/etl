@@ -265,12 +265,15 @@
           "template": template,
           "configuration": configuration
         } = data;
-        return $templatesService.fetchConfigDesc(template)
-          .then((description) => {
-            updateComponentTemplate(
-              component, template, description, configuration);
-          })
-      }).catch(() => {}); // To handle dialog close.
+
+        // We have new component we need to reload the list.
+        return $templatesService.forceLoad()
+          .then(() => $templatesService.fetchConfigDesc(template))
+          .then((description) => updateComponentTemplate(
+            component, template, description, configuration))
+          .catch(() => $statusService.error("Can't update the component."));
+      }).catch(() => {
+    }); // To handle dialog close.
   }
 
   function updateComponentTemplate(

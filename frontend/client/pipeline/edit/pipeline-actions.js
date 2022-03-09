@@ -236,9 +236,7 @@
 
   function savePipeline() {
     $canvasService.synchronize();
-    const data = pplModel.asJsonLd($pipeline);
-    const iri = $pipeline.pipeline.iri;
-    return pipelinesApi.savePipeline($httpService, iri, data, true)
+    return pipelinesApi.savePipeline($httpService, pplModel.asJsonLd($pipeline))
       .then(() => {
         $statusService.success("Pipeline saved.");
       });

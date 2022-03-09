@@ -1,16 +1,15 @@
 <configuration>
-
+    <!-- // https://stackoverflow.com/questions/6020545/send-redirect-route-java-util-logging-logger-jul-to-logback-using-slf4j -->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+    <!-- -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{"HH:mm:ss,SSS"} %-5level %logger{50} - %msg%n</pattern>
         </encoder>
     </appender>
-
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
-
-    <logger name="com.linkedpipes" level="DEBUG"/>
-    <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="ERROR"/>
-
 </configuration>

@@ -10,11 +10,11 @@ public class CreateNewTest {
 
     @Test
     public void createNewFromJarFile() throws Exception {
-        ConfigurationFacade facade = new ConfigurationFacade();
         var data = TestUtils.statementsFromResource("createNew.trig");
-        var actual = facade.createNewFromJarFile(
+        var actual = ConfigurationFacade.createNewFromJarFile(
                 TestUtils.selectGraph(data, "http://input"),
-                TestUtils.selectGraph(data, "http://description"),
+                ConfigurationFacade.loadDescription(
+                    TestUtils.selectGraph(data, "http://description")),
                 "http://base",
                 valueFactory.createIRI("http://expected/jar")
         );
@@ -24,11 +24,11 @@ public class CreateNewTest {
 
     @Test
     public void createNewFromTemplate() throws Exception {
-        ConfigurationFacade facade = new ConfigurationFacade();
         var data = TestUtils.statementsFromResource("createNew.trig");
-        var actual = facade.createNewFromTemplate(
+        var actual = ConfigurationFacade.createNewFromTemplate(
                 TestUtils.selectGraph(data, "http://input"),
-                TestUtils.selectGraph(data, "http://description"),
+                ConfigurationFacade.loadDescription(
+                    TestUtils.selectGraph(data, "http://description")),
                 "http://base",
                 valueFactory.createIRI("http://expected/template")
         );

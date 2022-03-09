@@ -1,0 +1,14 @@
+@prefix ex: <http://example.com/> .
+@prefix old: <http://old/> .
+
+<http://input/000> {
+    old:root
+        a ex:Type ;
+    .
+}
+
+<http://expected/000> {
+    <http://new/000>
+        a ex:Type ;
+    .
+}
