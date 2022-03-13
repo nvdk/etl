@@ -1,24 +1,18 @@
-FROM node:12-alpine as lp-etl-build
-ARG LP_ETL_BUILD_BRANCH=master
-ARG LP_ETL_BUILD_JAVA_TEST=-DskipTests
-LABEL lp_project=etl
-RUN apk add --no-cache maven git
-WORKDIR /opt/lp/etl
+FROM node:16.14.0-bullseye as lp-etl-build
+RUN apt-get update \
+ && apt-get -y --no-install-recommends install openjdk-17-jdk
+WORKDIR /opt/lp-etl
 VOLUME ["/root/.m2/repository"]
-RUN git clone --single-branch --branch $LP_ETL_BUILD_BRANCH https://github.com/linkedpipes/etl.git .
-RUN mvn install $LP_ETL_BUILD_JAVA_TEST -P "install-frontend"
+COPY ./ ./
+RUN ./mvnw install $LP_ETL_BUILD_JAVA_TEST -P "install-frontend"
 
-FROM node:12-alpine
+FROM node:16.14.0-bullseye
 ARG LP_ETL_USER=5987
-LABEL lp_project=etl
-LABEL component=frontend
-RUN addgroup --gid "$LP_ETL_USER" "linkedpipes" \
-    && adduser -D --home /opt/lp --ingroup "linkedpipes" --uid "$LP_ETL_USER" "etl"
-WORKDIR /opt/lp/etl/frontend
-COPY --from=lp-etl-build /opt/lp/etl/deploy/configuration.docker.properties /data/lp/etl/configuration/configuration.properties
-COPY --from=lp-etl-build /opt/lp/etl/deploy/frontend /opt/lp/etl/frontend
-VOLUME ["/data/lp/elt/configuration"]
+ENV LP_ETL_FRONTEND_CONFIGURATION=""
+RUN addgroup --gid $LP_ETL_USER "linkedpipes" \
+    && useradd -g "linkedpipes" -u $LP_ETL_USER "etl"
+WORKDIR /opt/lp-etl/frontend
+COPY --from=lp-etl-build --chown=$LP_ETL_USER:$LP_ETL_USER /opt/lp-etl/deploy/frontend ./
 USER $LP_ETL_USER
 EXPOSE 8080
-ENV configFileLocation="/data/lp/etl/configuration/configuration.properties"
 CMD ["npm", "run", "start"]
