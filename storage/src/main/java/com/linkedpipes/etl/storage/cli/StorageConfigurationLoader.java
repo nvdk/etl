@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class StorageConfigurationLoader {
@@ -126,7 +127,7 @@ public class StorageConfigurationLoader {
     }
 
     private String getEnv(String name) {
-        return System.getProperty(name);
+        return System.getenv(name);
     }
 
     private Integer getEnvInteger(String name) throws StorageException {
