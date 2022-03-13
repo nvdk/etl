@@ -46,7 +46,10 @@ public class StoreFactory {
             (new MigrateStore(currentStore, targetStore)).migrate();
             LOG.info("Store Migration finished");
         }
-         StoreInfoAdapter.save(storeDirectory, targetInfo);
+        StoreInfoAdapter.save(storeDirectory, targetInfo);
+        LOG.info("Store v{} {} initialized in '{}'",
+                targetInfo.version(), targetInfo.repository(),
+                storeDirectory.getAbsolutePath());
         return targetStore;
     }
 
@@ -60,12 +63,11 @@ public class StoreFactory {
                 "v" + String.format("%02d", info.version())
                         + "-" + info.repository());
         return switch (info.repository()) {
-            case ReadOnlyLegacyStore.STORE_NAME ->
-                    new ReadOnlyLegacyStore(directory, baseUrl, info.version());
-            case RdfDirectoryStoreV1.STORE_NAME ->
-                    new RdfDirectoryStoreV1(directory, baseUrl);
-            default ->
-                    throw new StorageException("Invalid store specification");
+            case ReadOnlyLegacyStore.STORE_NAME -> new ReadOnlyLegacyStore(
+                    directory, baseUrl, info.version());
+            case RdfDirectoryStoreV1.STORE_NAME -> new RdfDirectoryStoreV1(
+                    directory, baseUrl);
+            default -> throw new StorageException("Invalid store specification");
         };
     }
 

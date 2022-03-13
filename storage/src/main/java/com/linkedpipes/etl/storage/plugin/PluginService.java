@@ -44,12 +44,15 @@ public class PluginService implements PluginApi {
             LOG.warn("The plugin directory does not exist.");
             return;
         }
+        List<File> files = listPluginFiles(directory);
         for (File file : listPluginFiles(directory)) {
             if (file.isDirectory()) {
                 continue;
             }
             loadPluginFromFile(file);
         }
+        LOG.info("Loaded {} plugin templates from {} files in '{}'.",
+                plugins.size(), files.size(), directory.getAbsolutePath());
     }
 
     private List<File> listPluginFiles(File directory) {

@@ -59,7 +59,8 @@ public class StoreInfoAdapter {
         try {
             mapper.writeValue(file, info);
         } catch (IOException ex) {
-            throw new StorageException("Can't save storage info.", ex);
+            throw new StorageException(
+                    "Can't save storage info to '{}'", file, ex);
         }
     }
 

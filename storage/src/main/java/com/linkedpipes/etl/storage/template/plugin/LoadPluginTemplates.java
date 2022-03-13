@@ -8,6 +8,7 @@ import com.linkedpipes.plugin.loader.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -45,7 +46,6 @@ public class LoadPluginTemplates {
             } catch (StorageException ex) {
                 LOG.warn("Can't store plugin '{}'.", plugin.pluginIri, ex);
             }
-
         }
     }
 
