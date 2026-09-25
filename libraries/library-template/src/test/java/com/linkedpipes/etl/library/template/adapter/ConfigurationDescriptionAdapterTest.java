@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ConfigurationDescriptionAdapterTest {
 
@@ -25,13 +26,21 @@ public class ConfigurationDescriptionAdapterTest {
                         valueFactory.createIRI("http://name"),
                         valueFactory.createIRI("http://nameControl"),
                         valueFactory.createIRI("http://nameSubstitution"),
-                        false));
+                        false, Set.of()));
         members.put(valueFactory.createIRI("http://passwd"),
                 new ConfigurationDescription.Member(
                         valueFactory.createIRI("http://passwd"),
                         valueFactory.createIRI("http://passwdControl"),
                         valueFactory.createIRI("http://passwdSubstitution"),
-                        true));
+                        true, Set.of()));
+        members.put(valueFactory.createIRI("http://entry"),
+                new ConfigurationDescription.Member(
+                        valueFactory.createIRI("http://entry"),
+                        valueFactory.createIRI("http://entryControl"),
+                        valueFactory.createIRI("http://entrySubstitution"),
+                        false, Set.of(
+                                valueFactory.createIRI("http://value"),
+                                valueFactory.createIRI("http://token"))));
 
         var expected = new ConfigurationDescription(
                 valueFactory.createIRI("http://description"),

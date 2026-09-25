@@ -266,4 +266,18 @@ public class ConfigurationFacadeTest {
         TestUtils.assertIsomorphic(expected, actual);
     }
 
+    @Test
+    public void removePrivateNested() throws Exception {
+        var data = TestUtils.statements(
+                "configuration/remove-private-nested.trig");
+        var actual = ConfigurationFacade.removePrivateStatements(
+                Statements.wrap(TestUtils.selectGraph(data, "http://input"))
+                        .withoutGraph().selector(),
+                loadDescription(data, "http://description"));
+        var expected =
+                Statements.wrap(TestUtils.selectGraph(data, "http://expected"))
+                        .withoutGraph().asList();
+        TestUtils.assertIsomorphic(expected, actual);
+    }
+
 }

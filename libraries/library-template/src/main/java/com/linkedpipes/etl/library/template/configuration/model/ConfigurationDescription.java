@@ -4,6 +4,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Configuration description for a single entity type.
@@ -45,8 +46,19 @@ public record ConfigurationDescription(
             /*
              * Represent private (non-public) configuration.
              */
-            boolean isPrivate
+            boolean isPrivate,
+            /*
+             * Predicates that are private within the nested entities
+             * (subtree) of this member, the entities themselves
+             * and their other predicates stay public.
+             */
+            Set<IRI> privateProperties
     ) {
+
+        public Member {
+            privateProperties = privateProperties == null
+                    ? Set.of() : Set.copyOf(privateProperties);
+        }
 
     }
 

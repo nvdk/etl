@@ -13,8 +13,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RdfToConfigurationDescription {
 
@@ -67,6 +69,7 @@ public class RdfToConfigurationDescription {
             Map<IRI, ConfigurationDescription.Member> collector) {
         IRI property = null, control = null;
         boolean isPrivate = false;
+        Set<IRI> privateProperties = new HashSet<>();
         for (Statement statement : statements.withSubject(resource)) {
             Value value = statement.getObject();
             switch (statement.getPredicate().stringValue()) {
@@ -85,6 +88,11 @@ public class RdfToConfigurationDescription {
                         isPrivate = ((Literal) value).booleanValue();
                     }
                     break;
+                case LP_V1.PRIVATE_PROPERTY:
+                    if (value.isIRI()) {
+                        privateProperties.add((IRI) value);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -98,7 +106,8 @@ public class RdfToConfigurationDescription {
         //
         ConfigurationDescription.Member member =
                 new ConfigurationDescription.Member(
-                        property, control, substitution, isPrivate);
+                        property, control, substitution, isPrivate,
+                        privateProperties);
         collector.put(property, member);
     }
 

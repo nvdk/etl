@@ -75,6 +75,10 @@ final public class LP_V1 {
     public static final String IS_PRIVATE =
             "http://plugins.linkedpipes.com/ontology/configuration/private";
 
+    public static final String PRIVATE_PROPERTY =
+            "http://plugins.linkedpipes.com/ontology/configuration/"
+                    + "privateProperty";
+
     public static final String PREF_LABEL =
             "http://www.w3.org/2004/02/skos/core#prefLabel";
 

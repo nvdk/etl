@@ -49,6 +49,9 @@ public class ConfigurationDescriptionToRdf {
         builder.add(resource, LP_V1.CONFIG_DESC_PROPERTY, property);
         builder.add(resource, LP_V1.CONFIG_DESC_CONTROL, member.control());
         builder.add(resource, LP_V1.IS_PRIVATE, member.isPrivate());
+        for (IRI privateProperty : member.privateProperties()) {
+            builder.add(resource, LP_V1.PRIVATE_PROPERTY, privateProperty);
+        }
     }
 
 }

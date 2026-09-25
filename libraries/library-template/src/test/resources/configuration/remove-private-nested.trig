@@ -1,0 +1,82 @@
+@prefix config: <http://plugins.linkedpipes.com/ontology/configuration/> .
+
+<http://input> {
+
+<http://instance> a <http://plugin#Configuration> ;
+    <http://plugin#uri> "url" ;
+    <http://plugin#uriControl> <http://keep> ;
+    <http://plugin#entry> <http://instance/entry/1>, <http://instance/entry/2> ;
+    <http://plugin#entryControl> <http://keep> ;
+    # Same predicate as the nested one, but not in the member subtree.
+    <http://plugin#value> "public" ;
+.
+
+<http://instance/entry/1> a <http://plugin#Entry> ;
+    <http://plugin#key> "first" ;
+    <http://plugin#value> "first-value" ;
+.
+
+<http://instance/entry/2> a <http://plugin#Entry> ;
+    <http://plugin#key> "second" ;
+    <http://plugin#value> "second-value" ;
+    <http://plugin#nested> <http://instance/entry/2/nested> ;
+.
+
+<http://instance/entry/2/nested>
+    <http://plugin#value> "nested-value" ;
+    # Cycle must not cause infinite loop.
+    <http://plugin#parent> <http://instance/entry/2> ;
+.
+
+}
+
+<http://description> {
+
+<http://desc>
+    a <http://plugins.linkedpipes.com/ontology/ConfigurationDescription> ;
+    config:type <http://plugin#Configuration> ;
+    config:member <http://desc/uri> , <http://desc/entry> , <http://desc/value> ;
+.
+
+<http://desc/uri>
+    a config:ConfigurationMember ;
+    config:property <http://plugin#uri> ;
+    config:control <http://plugin#uriControl> ;
+    config:private false .
+
+<http://desc/entry>
+    a config:ConfigurationMember ;
+    config:property <http://plugin#entry> ;
+    config:control <http://plugin#entryControl> ;
+    config:privateProperty <http://plugin#value> .
+
+<http://desc/value>
+    a config:ConfigurationMember ;
+    config:property <http://plugin#value> ;
+    config:control <http://plugin#valueControl> .
+}
+
+<http://expected> {
+
+<http://instance> a <http://plugin#Configuration> ;
+    <http://plugin#uri> "url" ;
+    <http://plugin#uriControl> <http://keep> ;
+    <http://plugin#entry> <http://instance/entry/1>, <http://instance/entry/2> ;
+    <http://plugin#entryControl> <http://keep> ;
+    <http://plugin#value> "public" ;
+.
+
+<http://instance/entry/1> a <http://plugin#Entry> ;
+    <http://plugin#key> "first" ;
+.
+
+<http://instance/entry/2> a <http://plugin#Entry> ;
+    <http://plugin#key> "second" ;
+    <http://plugin#nested> <http://instance/entry/2/nested> ;
+.
+
+<http://instance/entry/2/nested>
+    <http://plugin#parent> <http://instance/entry/2> ;
+.
+
+}
