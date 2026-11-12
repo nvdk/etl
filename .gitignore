@@ -48,3 +48,5 @@ dependency-reduced-pom.xml
 
 # Python
 __pycache__/
+# Woodpecker CI for the lod/* executor builds.
+!.woodpecker/

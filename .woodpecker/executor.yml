@@ -1,0 +1,22 @@
+# Builds the LinkedPipes executor from a lod/* branch (a release commit plus
+# local patches) and pushes it to Docker Hub as
+# nvdk/linkedpipes-etl-executor:<branch without "lod/">,
+# e.g. lod/398fe86-rdf4j503 -> nvdk/linkedpipes-etl-executor:398fe86-rdf4j503.
+# Only the executor: storage, frontend and executor-monitor stay on the
+# upstream images of the same release.
+steps:
+  build-executor:
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: nvdk/linkedpipes-etl-executor
+      dockerfile: executor/Dockerfile
+      context: .
+      platforms: linux/amd64
+      tags: "${CI_COMMIT_BRANCH##lod/}"
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+when:
+  - event: push
+    branch: lod/*
